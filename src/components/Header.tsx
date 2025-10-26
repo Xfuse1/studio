@@ -21,14 +21,6 @@ const Header = () => {
           <Briefcase className="h-6 w-6 text-primary" />
           <span className="font-headline">{title}</span>
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          <Link href="/" className="transition-colors hover:text-primary">
-            الرئيسية
-          </Link>
-          <Link href="/search" className="transition-colors hover:text-primary">
-            بحث
-          </Link>
-        </nav>
         <div className="flex items-center gap-4">
           {user ? (
             <Button onClick={signOut} variant="outline" className="rounded-2xl">

@@ -2,22 +2,17 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 
 export default function SplashIntro() {
   const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push("/search");
+      router.replace("/search");
     }, 2500); // Auto-navigate after 2.5 seconds
 
     return () => clearTimeout(timer);
   }, [router]);
-
-  const handleStart = () => {
-    router.push("/search");
-  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-center bg-secondary">
@@ -32,13 +27,6 @@ export default function SplashIntro() {
         <p className="mt-4 text-lg md:text-xl text-muted-foreground">
           ابحث عن فرصتك أو مرشحك القادم.
         </p>
-        <Button
-          onClick={handleStart}
-          className="mt-8 rounded-2xl px-8 py-6 text-lg"
-          size="lg"
-        >
-          ابدأ
-        </Button>
       </div>
     </div>
   );
