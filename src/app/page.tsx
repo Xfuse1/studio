@@ -1,32 +1,25 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function SplashIntro() {
+export default function SplashPage() {
   const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/search");
-    }, 2500); // Auto-navigate after 2.5 seconds
+      router.push('/search');
+    }, 2000); // 2 second delay
 
     return () => clearTimeout(timer);
   }, [router]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-center bg-secondary">
-      <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/20 rounded-full animate-float-1 filter blur-xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-accent/20 rounded-full animate-float-2 filter blur-2xl"></div>
-      <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-primary/10 rounded-full animate-float-3 filter blur-xl"></div>
-      
-      <div className="z-10 animate-fade-in-up">
-        <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground">
-          اهلا بك في بوابة التوظيف
+    <div className="flex items-center justify-center h-screen bg-background">
+      <div className="text-center animate-fade-in">
+        <h1 className="text-4xl font-bold font-headline text-primary">
+          أهلاً بك في بوابة التوظيف
         </h1>
-        <p className="mt-4 text-lg md:text-xl text-muted-foreground">
-          ابحث عن فرصتك أو مرشحك القادم.
-        </p>
       </div>
     </div>
   );
