@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import type { SearchParams } from "@/app/search/page";
 import { Loader2, Search } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 interface SearchBarProps {
   onSearch: (params: SearchParams) => void;
@@ -22,10 +23,18 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
+  const searchParams = useSearchParams();
   const [q, setQ] = useState("");
   const [loc, setLoc] = useState("");
   const [type, setType] = useState("all");
   const [remote, setRemote] = useState(false);
+
+  useEffect(() => {
+    setQ(searchParams.get('q') || '');
+    setLoc(search_params.get('loc') || '');
+    setType(searchParams.get('type') || 'all');
+    setRemote(searchParams.get('remote') === 'true');
+  }, [searchParams]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

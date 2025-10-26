@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import SearchBar from "@/components/search/SearchBar";
@@ -17,13 +17,29 @@ export type SearchParams = {
   remote: boolean;
 };
 
-export default function SearchPage() {
+function SearchComponent() {
   const { user } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
+  
+  const q = searchParams.get("q") || "";
+  const loc = searchParams.get("loc") || "";
+
+  useEffect(() => {
+    if (q || loc) {
+        handleSearch({
+            q,
+            loc,
+            type: searchParams.get("type") || "all",
+            remote: searchParams.get("remote") === "true",
+        });
+    }
+  }, [q, loc, user]);
 
   const handleSearch = (params: SearchParams) => {
     setSearchAttempted(true);
@@ -64,12 +80,21 @@ export default function SearchPage() {
       setLoading(false);
     }, 1000);
   };
+  
+  const handleUrlUpdate = (params: SearchParams) => {
+    const urlParams = new URLSearchParams();
+    if(params.q) urlParams.set('q', params.q);
+    if(params.loc) urlParams.set('loc', params.loc);
+    if(params.type) urlParams.set('type', params.type);
+    if(params.remote) urlParams.set('remote', String(params.remote));
+    router.push(`/search?${urlParams.toString()}`);
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
       <div className="max-w-4xl mx-auto">
         <section className="mb-12 animate-fade-in-up">
-          <SearchBar onSearch={handleSearch} isLoading={loading} />
+          <SearchBar onSearch={handleUrlUpdate} isLoading={loading} />
         </section>
 
         <section>
@@ -97,4 +122,12 @@ export default function SearchPage() {
       </div>
     </div>
   );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+      <SearchComponent />
+    </Suspense>
+  )
 }
