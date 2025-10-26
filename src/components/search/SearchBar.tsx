@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,7 +32,7 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
 
   useEffect(() => {
     setQ(searchParams.get('q') || '');
-    setLoc(search_params.get('loc') || '');
+    setLoc(searchParams.get('loc') || '');
     setType(searchParams.get('type') || 'all');
     setRemote(searchParams.get('remote') === 'true');
   }, [searchParams]);
