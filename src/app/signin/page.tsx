@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
+import { type UserRole } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
