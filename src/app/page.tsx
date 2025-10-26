@@ -22,7 +22,7 @@ export default function SplashIntro() {
       
       <div className="z-10 animate-fade-in-up">
         <h1 className="text-5xl md:text-7xl font-headline font-bold text-foreground">
-          أهلاً بك في Employed
+          اهلا بك في بوابة التوظيف
         </h1>
         <p className="mt-4 text-lg md:text-xl text-muted-foreground">
           ابحث عن فرصتك أو مرشحك القادم.
