@@ -13,7 +13,7 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
           <Briefcase className="h-6 w-6 text-primary" />
-          <span className="font-headline">Employed</span>
+          <span className="font-headline">بوابة التوظيف</span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
           <Link href="/" className="transition-colors hover:text-primary">
