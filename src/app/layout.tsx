@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/contexts/AuthContext";
-import Header from "@/components/Header";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Employed",

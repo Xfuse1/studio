@@ -8,11 +8,11 @@ import { useEffect, useState } from "react";
 
 const Header = () => {
   const { user, signOut } = useAuth();
-  const [isClient, setIsClient] = useState(false)
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    setIsClient(true);
+  }, []);
 
   return (
     <header className="bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
