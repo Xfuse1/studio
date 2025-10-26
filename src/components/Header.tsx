@@ -9,9 +9,11 @@ import { useEffect, useState } from "react";
 const Header = () => {
   const { user, signOut } = useAuth();
   const [title, setTitle] = useState("Employed");
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setTitle("بوابة التوظيف");
+    setIsClient(true);
   }, []);
 
   return (
@@ -22,14 +24,18 @@ const Header = () => {
           <span className="font-headline">{title}</span>
         </Link>
         <div className="flex items-center gap-4">
-          {user ? (
-            <Button onClick={signOut} variant="outline" className="rounded-2xl">
-              تسجيل الخروج
-            </Button>
-          ) : (
-            <Button asChild className="rounded-2xl">
-              <Link href="/signin">تسجيل الدخول</Link>
-            </Button>
+          {isClient && (
+            <>
+              {user ? (
+                <Button onClick={signOut} variant="outline" className="rounded-2xl">
+                  تسجيل الخروج
+                </Button>
+              ) : (
+                <Button asChild className="rounded-2xl">
+                  <Link href="/signin">تسجيل الدخول</Link>
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
