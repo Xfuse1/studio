@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import SearchBar from "@/components/search/SearchBar";
-import ResultsList from "@/components/search/ResultsList";
-import { mockJobs, mockCandidates } from "@/lib/mock-data";
-import { ToastAction } from "@/components/ui/toast";
-import { Loader2 } from "lucide-react";
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import SearchBar from '@/components/search/SearchBar';
+import ResultsList from '@/components/search/ResultsList';
+import { mockJobs, mockCandidates } from '@/lib/mock-data';
+import { ToastAction } from '@/components/ui/toast';
+import { Loader2 } from 'lucide-react';
 
 export type SearchParams = {
   q: string;
@@ -26,31 +26,32 @@ function SearchComponent() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
-  
-  const q = searchParams.get("q") || "";
-  const loc = searchParams.get("loc") || "";
+
+  const q = searchParams.get('q') || '';
+  const loc = searchParams.get('loc') || '';
 
   useEffect(() => {
     if (q || loc) {
-        handleSearch({
-            q,
-            loc,
-            type: searchParams.get("type") || "all",
-            remote: searchParams.get("remote") === "true",
-        });
+      handleSearch({
+        q,
+        loc,
+        type: searchParams.get('type') || 'all',
+        remote: searchParams.get('remote') === 'true',
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, loc, user]);
 
-  const handleSearch = (params: SearchParams) => {
+  const handleSearch = async (params: SearchParams) => {
     setSearchAttempted(true);
 
     if (!user) {
       setResults([]);
       toast({
-        title: "مستخدم غير مسجل",
-        description: "الرجاء تسجيل الدخول للمتابعة والبحث عن الفرص.",
+        title: 'مستخدم غير مسجل',
+        description: 'الرجاء تسجيل الدخول للمتابعة والبحث عن الفرص.',
         action: (
-          <ToastAction altText="Go to sign in" onClick={() => router.push("/signin")}>
+          <ToastAction altText="Go to sign in" onClick={() => router.push('/signin')}>
             تسجيل الدخول
           </ToastAction>
         ),
@@ -61,34 +62,68 @@ function SearchComponent() {
     setLoading(true);
     setResults([]);
 
-    // Simulate API call
-    setTimeout(() => {
-      let fetchedResults: any[] = [];
-      if (user.role === 'seeker') {
-        fetchedResults = mockJobs.filter(job => 
-          job.title.toLowerCase().includes(params.q.toLowerCase()) &&
-          job.location.toLowerCase().includes(params.loc.toLowerCase())
-        );
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      const effectiveRole = user.role;
+
+      if (effectiveRole === 'seeker') {
+        let filteredJobs = mockJobs;
+        if (params.q?.trim()) {
+          filteredJobs = filteredJobs.filter(job =>
+            job.title.toLowerCase().includes(params.q.toLowerCase()) ||
+            job.company.toLowerCase().includes(params.q.toLowerCase())
+          );
+        }
+        if (params.loc?.trim()) {
+          filteredJobs = filteredJobs.filter(job =>
+            job.location.toLowerCase().includes(params.loc.toLowerCase())
+          );
+        }
+        setResults(filteredJobs);
+      } else if (effectiveRole === 'company') {
+        let filteredCandidates = mockCandidates;
+        if (params.q?.trim()) {
+          const lowerQ = params.q.toLowerCase();
+          filteredCandidates = filteredCandidates.filter(candidate =>
+            candidate.title.toLowerCase().includes(lowerQ) ||
+            candidate.skills.some(skill => skill.toLowerCase().includes(lowerQ))
+          );
+        }
+        if (params.loc?.trim()) {
+          filteredCandidates = filteredCandidates.filter(candidate =>
+            candidate.location.toLowerCase().includes(params.loc.toLowerCase())
+          );
+        }
+        setResults(filteredCandidates);
       } else {
-        fetchedResults = mockCandidates.filter(candidate => 
-          (candidate.title.toLowerCase().includes(params.q.toLowerCase()) || 
-           candidate.skills.some(skill => skill.toLowerCase().includes(params.q.toLowerCase()))) &&
-          candidate.location.toLowerCase().includes(params.loc.toLowerCase())
-        );
+        toast({
+          title: 'تعذر تحديد الدور',
+          description: 'لم يتم العثور على دور المستخدم (seeker/company).',
+        });
       }
-      setResults(fetchedResults);
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: 'فشل البحث',
+        description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
-  
+
   const handleUrlUpdate = (params: SearchParams) => {
     const urlParams = new URLSearchParams();
-    if(params.q) urlParams.set('q', params.q);
-    if(params.loc) urlParams.set('loc', params.loc);
-    if(params.type) urlParams.set('type', params.type);
-    if(params.remote) urlParams.set('remote', String(params.remote));
+    if (params.q) urlParams.set('q', params.q);
+    if (params.loc) urlParams.set('loc', params.loc);
+    if (params.type) urlParams.set('type', params.type);
+    if (params.remote) urlParams.set('remote', String(params.remote));
     router.push(`/search?${urlParams.toString()}`);
-  }
+  };
+
+  const role = user?.role;
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
@@ -105,17 +140,23 @@ function SearchComponent() {
           ) : searchAttempted && results.length > 0 ? (
             <>
               <h2 className="text-2xl font-headline font-bold mb-6">
-                {user?.role === 'seeker' ? 'الوظائف المتاحة' : 'المرشحون'}
+                {role === 'seeker'
+                  ? 'الوظائف المتاحة'
+                  : 'المرشحون'}
               </h2>
-              <ResultsList results={results} role={user?.role} />
+              <ResultsList results={results} role={role} />
             </>
           ) : searchAttempted && !loading ? (
             <div className="text-center py-16 bg-card rounded-2xl shadow-sm">
-                <p className="text-lg text-muted-foreground">لم يتم العثور على نتائج. حاول بكلمات بحث مختلفة.</p>
+              <p className="text-lg text-muted-foreground">
+                لم يتم العثور على نتائج. حاول بكلمات بحث مختلفة.
+              </p>
             </div>
           ) : (
             <div className="text-center py-16 bg-card rounded-2xl shadow-sm">
-                <p className="text-lg text-muted-foreground">{user ? 'ابدأ البحث للعثور على النتائج' : 'الرجاء تسجيل الدخول لبدء البحث'}</p>
+              <p className="text-lg text-muted-foreground">
+                {user ? 'ابدأ البحث للعثور على النتائج' : 'الرجاء تسجيل الدخول لبدء البحث'}
+              </p>
             </div>
           )}
         </section>
@@ -126,8 +167,14 @@ function SearchComponent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      }
+    >
       <SearchComponent />
     </Suspense>
-  )
+  );
 }
