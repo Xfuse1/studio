@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -64,7 +63,9 @@ export default function SearchPage() {
             *,
             companies (
               name_ar,
-              name_en
+              name_en,
+              industry,
+              country
             )
           `)
           .eq('is_active', true);
@@ -78,30 +79,34 @@ export default function SearchPage() {
         
         const { data, error } = await query;
 
-        console.log('📊 نتيجة البحث في jobs:', { 
+        console.log('📊 نتيجة البحث الرئيسي:', { 
           data, 
           error,
-          searchTerm: params.q,
-          dataLength: data?.length 
+          query: params.q,
+          hasData: !!data,
+          dataLength: data?.length,
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error('❌ خطأ في الاستعلام:', error);
+          throw error;
+        }
 
-        if (data) {
+        if (data && data.length > 0) {
           const adaptedJobs = data.map(job => ({
             id: job.id,
             title: job.title,
-            company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
+            company: job.companies?.name_ar || job.companies?.name_en || 'شركة غير معروفة',
             location: job.location,
             description: job.description,
             postedAt: job.created_at,
-            logo: 'company-logo-1' // Using placeholder for now
           }));
           setResults(adaptedJobs);
         } else {
           setResults([]);
         }
-      } else { // User is a 'company'
+      } else { 
+        // User is a 'company' - البحث في الباحثين
         console.log('🔍 بداية البحث عن مرشحين:', { nameOrTitle: params.q, location: params.loc });
         
         let query = supabase.from('seeker_profiles').select('*');
@@ -114,6 +119,13 @@ export default function SearchPage() {
         }
 
         const { data, error } = await query;
+        
+        console.log('📊 نتيجة البحث في الباحثين:', {
+          data,
+          error,
+          dataLength: data?.length
+        });
+
         if (error) throw error;
 
         const adaptedCandidates = (data || []).map(candidate => ({
@@ -122,8 +134,9 @@ export default function SearchPage() {
           title: candidate.job_title,
           location: candidate.country,
           skills: candidate.skills || [],
-          summary: `ملخص تعريفي للمرشح ${candidate.full_name}`, // Placeholder summary
-          avatar: 'candidate-avatar-1' // Placeholder avatar
+          nationality: candidate.nationality,
+          phone: candidate.phone,
+          email: candidate.email,
         }));
 
         setResults(adaptedCandidates);
@@ -140,7 +153,7 @@ export default function SearchPage() {
     } finally {
         setLoading(false);
     }
-  }, [user, toast]); // Correct dependencies
+  }, [user, toast]);
 
   // Initial data load effect
   useEffect(() => {
@@ -148,11 +161,9 @@ export default function SearchPage() {
     if (user) {
       performSearch({ q: '', loc: '', type: 'all', remote: false });
     } else {
-      // If user is null (not logged in), clear results.
-      // This prevents showing stale data from a previous session.
       setResults([]);
     }
-  }, [user, performSearch]); // Reruns when user logs in/out or performSearch is stable
+  }, [user, performSearch]);
   
   return (
     <>
@@ -166,6 +177,7 @@ export default function SearchPage() {
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <span className="mr-2">جاري البحث...</span>
               </div>
             ) : user && results.length > 0 ? (
               <>
