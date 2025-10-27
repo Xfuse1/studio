@@ -1,218 +1,63 @@
 'use client';
-
-import { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
-
-import SearchBar from '@/components/search/SearchBar';
-import ResultsList from '@/components/search/ResultsList';
-
-export type SearchParams = {
-  q: string;
-  loc: string;
-  type: string;
-  remote: boolean;
-};
+import { useEffect, useState } from 'react';
 
 export default function SearchPage() {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const router = useRouter();
+  const [message, setMessage] = useState('جاري التحميل...');
 
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-
-  const performSearch = useCallback(async (params: SearchParams) => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
-    }
-
-    if (!supabase) {
-      toast({
-        title: 'فشل الاتصال بالداتا بيز',
-        description: 'تأكد من إعداد متغيرات البيئة الخاصة بـ Supabase بشكل صحيح.',
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      if (user.role === 'seeker') {
-        console.log('🔍 بداية البحث عن وظائف:', { jobTitle: params.q, location: params.loc });
-        
-        let query = supabase
-          .from('jobs')
-          .select(`
-            *,
-            companies (
-              name_ar,
-              name_en,
-              industry,
-              country
-            )
-          `)
-          .eq('is_active', true);
-
-        if (params.q) {
-          query = query.ilike('title', `%${params.q}%`);
-        }
-        if (params.loc) {
-          query = query.ilike('location', `%${params.loc}%`);
-        }
-        
-        const { data, error } = await query;
-
-        console.log('📊 نتيجة البحث الرئيسي:', { 
-          data, 
-          error,
-          query: params.q,
-          hasData: !!data,
-          dataLength: data?.length,
-        });
-        
-        if (error) {
-          console.error('❌ خطأ في الاستعلام:', error);
-          throw error;
-        }
-
-        if (data && data.length > 0) {
-          const adaptedJobs = data.map(job => ({
-            id: job.id,
-            title: job.title,
-            company: job.companies?.name_ar || job.companies?.name_en || 'شركة غير معروفة',
-            location: job.location,
-            description: job.description,
-            postedAt: job.created_at,
-          }));
-          setResults(adaptedJobs);
-        } else {
-          setResults([]);
-        }
-      } else { 
-        // User is a 'company' - البحث في الباحثين
-        console.log('🔍 بداية البحث عن مرشحين:', { nameOrTitle: params.q, location: params.loc });
-        
-        let query = supabase.from('seeker_profiles').select('*');
-
-        if (params.q) {
-          query = query.or(`job_title.ilike.%${params.q}%,full_name.ilike.%${params.q}%`);
-        }
-        if (params.loc) {
-          query = query.ilike('country', `%${params.loc}%`);
-        }
-
-        const { data, error } = await query;
-        
-        console.log('📊 نتيجة البحث في الباحثين:', {
-          data,
-          error,
-          dataLength: data?.length
-        });
-
-        if (error) throw error;
-
-        const adaptedCandidates = (data || []).map(candidate => ({
-          id: candidate.id,
-          name: candidate.full_name,
-          title: candidate.job_title,
-          location: candidate.country,
-          skills: candidate.skills || [],
-          nationality: candidate.nationality,
-          phone: candidate.phone,
-          email: candidate.email,
-        }));
-
-        setResults(adaptedCandidates);
-      }
-      
-    } catch (err: any) {
-        console.error('❌ خطأ في البحث:', err);
-        toast({
-            title: 'فشل البحث',
-            description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
-            variant: "destructive"
-        });
-        setResults([]);
-    } finally {
-        setLoading(false);
-    }
-  }, [user, toast]);
-
-  // Initial data load effect
   useEffect(() => {
-    // Only run search if user is loaded
-    if (user) {
-      performSearch({ q: '', loc: '', type: 'all', remote: false });
-    } else {
-      setResults([]);
-    }
-  }, [user, performSearch]);
-  
+    console.log('🎯 TEST: صفحة البحث اتحملت!');
+    console.log('✅ الكود شغال بنجاح');
+    console.log('🕒 الوقت:', new Date().toLocaleTimeString());
+    
+    setMessage('✅ الكود شغال - انظري الـ Console (F12)');
+
+    // اختبار بسيط
+    setTimeout(() => {
+      console.log('⏰ اختبار الـ setTimeout شغال');
+    }, 1000);
+  }, []);
+
   return (
-    <>
-      <div className="container mx-auto px-4 md:px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          <section className="mb-12 animate-fade-in-up">
-            <SearchBar onSearch={performSearch} isLoading={loading} />
-          </section>
-
-          <section>
-            {loading ? (
-              <div className="flex justify-center items-center py-16">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <span className="mr-2">جاري البحث...</span>
-              </div>
-            ) : user && results.length > 0 ? (
-              <>
-                <h2 className="text-2xl font-headline font-bold mb-6">
-                  {user.role === 'seeker' ? 'الوظائف المتاحة' : 'المرشحون المتاحون'}
-                </h2>
-                <ResultsList results={results} role={user.role} />
-              </>
-            ) : (
-              <div className="text-center py-16 bg-card rounded-2xl shadow-sm">
-                <p className="text-lg text-muted-foreground">
-                  {user ? 'لم يتم العثور على نتائج. حاول بكلمات بحث مختلفة.' : 'يرجى تسجيل الدخول للبحث وعرض النتائج.'}
-                </p>
-              </div>
-            )}
-          </section>
-        </div>
-      </div>
-
-      <AlertDialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>مطلوب تسجيل الدخول</AlertDialogTitle>
-            <AlertDialogDescription>
-              يجب عليك تسجيل الدخول أولاً لتتمكن من البحث وعرض النتائج.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <AlertDialogAction onClick={() => router.push('/signin')}>
-              الانتقال إلى صفحة تسجيل الدخول
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <div style={{ 
+      padding: '40px', 
+      textAlign: 'center', 
+      fontSize: '20px',
+      backgroundColor: '#f0f8ff',
+      minHeight: '100vh'
+    }}>
+      <h1 style={{ color: '#008080', marginBottom: '20px' }}>بوابة التوظيف - وضع الاختبار</h1>
+      <p style={{ 
+        color: 'green', 
+        fontWeight: 'bold', 
+        fontSize: '24px',
+        padding: '20px',
+        border: '2px solid green',
+        borderRadius: '10px'
+      }}>
+        {message}
+      </p>
+      <p style={{ marginTop: '20px', color: '#666' }}>
+        افتحي <strong>Developer Tools (F12)</strong> ثم <strong>Console</strong>
+      </p>
+      
+      <button 
+        onClick={() => {
+          console.log('🔄 زر الاختبار اتحط');
+          setMessage('🎯 الزر شغال - شوفي الـ Console');
+        }}
+        style={{ 
+          padding: '15px 30px', 
+          margin: '20px', 
+          fontSize: '18px',
+          backgroundColor: '#008080',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer'
+        }}
+      >
+        اضغطي هنا للتأكد
+      </button>
+    </div>
   );
 }
