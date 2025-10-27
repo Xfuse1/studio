@@ -1,54 +1,108 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { type UserRole } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/useAuth';
 
-export default function AuthPage() {
+type UserRole = 'seeker' | 'company';
+
+export default function SignInPage() {
+  const router = useRouter();
   const { signIn } = useAuth();
-  const [role, setRole] = useState<UserRole>("seeker");
 
-  const handleSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    signIn(role);
-  };
-  
+  // تبويبات الدور
+  const [role, setRole] = useState<UserRole>('seeker');
+
+  // وضع الشاشة: تسجيل دخول أم إنشاء حساب
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+
+  // حقول النموذج
+  const [email, setEmail] = useState(role === 'seeker' ? 'seeker@example.com' : 'company@example.com');
+  const [password, setPassword] = useState('password');
+
+  // حالة عامة
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const onTabChange = (value: string) => {
-    setRole(value as UserRole);
-  }
+    const r = value as UserRole;
+    setRole(r);
+    // مجرد قيمة افتراضية للمثال – احذفيها لو عايزة
+    setEmail(r === 'seeker' ? 'seeker@example.com' : 'company@example.com');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      // Mock authentication logic
+      // In a real app, you would validate credentials here
+      if (!email || !password) {
+        throw new Error('Please enter email and password');
+      }
+
+      // Simulate network request
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Use the mock signIn function from AuthContext
+      signIn(role);
+      
+      // No need to push, signIn handles redirection
+    } catch (err: any) {
+      setError(err?.message ?? 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const AuthForm = () => (
-    <form onSubmit={handleSignIn}>
-      <div className="grid gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="email">البريد الإلكتروني</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="m@example.com"
-            required
-            defaultValue={role === 'seeker' ? 'seeker@example.com' : 'company@example.com'}
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="password">كلمة المرور</Label>
-          <Input id="password" type="password" required defaultValue="password" />
-        </div>
-        <Button type="submit" className="w-full rounded-2xl">
-          تسجيل الدخول
-        </Button>
+    <form onSubmit={handleSubmit} className="grid gap-4">
+      <div className="grid gap-2">
+        <Label htmlFor="email">البريد الإلكتروني</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="m@example.com"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+        />
       </div>
+      <div className="grid gap-2">
+        <Label htmlFor="password">كلمة المرور</Label>
+        <Input
+          id="password"
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+        />
+      </div>
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
+
+      <Button type="submit" className="w-full rounded-2xl" disabled={loading}>
+        {loading ? 'جارٍ المعالجة…' : mode === 'signin' ? 'تسجيل الدخول' : 'إنشاء حساب'}
+      </Button>
+
+      <button
+        type="button"
+        onClick={() => setMode((m) => (m === 'signin' ? 'signup' : 'signin'))}
+        className="text-sm text-primary mt-2"
+      >
+        {mode === 'signin' ? 'ليس لديك حساب؟ أنشئ حساباً جديداً' : 'لديك حساب؟ سجّل الدخول'}
+      </button>
     </form>
   );
 
@@ -60,26 +114,24 @@ export default function AuthPage() {
             <TabsTrigger value="seeker">باحث عن عمل</TabsTrigger>
             <TabsTrigger value="company">شركة</TabsTrigger>
           </TabsList>
+
           <TabsContent value="seeker">
             <Card className="rounded-2xl shadow-lg">
               <CardHeader>
-                <CardTitle>تسجيل دخول كباحث عن عمل</CardTitle>
-                <CardDescription>
-                  ابحث عن وظيفتك التالية الآن.
-                </CardDescription>
+                <CardTitle>{mode === 'signin' ? 'تسجيل دخول كباحث عن عمل' : 'إنشاء حساب كباحث عن عمل'}</CardTitle>
+                <CardDescription>ابحث عن وظيفتك التالية الآن.</CardDescription>
               </CardHeader>
               <CardContent>
                 <AuthForm />
               </CardContent>
             </Card>
           </TabsContent>
+
           <TabsContent value="company">
             <Card className="rounded-2xl shadow-lg">
               <CardHeader>
-                <CardTitle>تسجيل دخول كشركة</CardTitle>
-                <CardDescription>
-                  اعثر على أفضل المواهب لشركتك.
-                </CardDescription>
+                <CardTitle>{mode === 'signin' ? 'تسجيل دخول كشركة' : 'إنشاء حساب كشركة'}</CardTitle>
+                <CardDescription>اعثر على أفضل المواهب لشركتك.</CardDescription>
               </CardHeader>
               <CardContent>
                 <AuthForm />
