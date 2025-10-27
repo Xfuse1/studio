@@ -44,19 +44,14 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      // Mock authentication logic
       // In a real app, you would validate credentials here
       if (!email || !password) {
         throw new Error('Please enter email and password');
       }
 
-      // Simulate network request
-      await new Promise(resolve => setTimeout(resolve, 500));
-
       // Use the mock signIn function from AuthContext
       signIn(role);
       
-      // No need to push, signIn handles redirection
     } catch (err: any) {
       setError(err?.message ?? 'Authentication failed');
     } finally {
