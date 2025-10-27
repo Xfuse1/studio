@@ -2,9 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 
 export default function SplashPage() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -18,7 +20,7 @@ export default function SplashPage() {
     <div className="flex items-center justify-center h-screen bg-background">
       <div className="text-center animate-fade-in">
         <h1 className="text-4xl font-bold font-headline text-primary">
-          أهلاً بك في بوابة التوظيف
+          {t('splash.welcome')}
         </h1>
       </div>
     </div>

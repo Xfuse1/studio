@@ -1,0 +1,61 @@
+{
+  "header": {
+    "title": "Hiring Portal",
+    "signIn": "Sign In",
+    "signOut": "Sign Out"
+  },
+  "splash": {
+    "welcome": "Welcome to the Hiring Portal"
+  },
+  "search": {
+    "findYourDreamJob": "Find Your Dream Job",
+    "yourGateway": "Your gateway to promising career opportunities.",
+    "findTopTalent": "Find the Best Talent",
+    "thousandsOfCandidates": "Thousands of qualified candidates are waiting for you.",
+    "jobTitleOrKeyword": "Job Title or Keyword",
+    "jobTitlePlaceholder": "e.g., Software Engineer",
+    "location": "Location",
+    "locationPlaceholder": "e.g., Riyadh",
+    "search": "Search",
+    "employmentType": "Employment Type",
+    "all": "All",
+    "fullTime": "Full-time",
+    "partTime": "Part-time",
+    "contract": "Contract",
+    "remoteOnly": "Remote Only",
+    "loginRequiredTitle": "Login Required",
+    "loginRequiredDescription": "To view candidates, you must first log in as a company.",
+    "noResultsTitle": "No Results Found",
+    "noResultsDescription": "Try broadening your search or using different keywords.",
+    "searchFailedTitle": "Search Failed",
+    "searchFailedDescription": "An error occurred while fetching results. This may be related to data access permissions (RLS).",
+    "unknownCompany": "Unknown Company"
+  },
+  "jobCard": {
+    "applyNow": "Apply Now",
+    "posted": "Posted"
+  },
+  "candidateCard": {
+    "skills": "Skills:",
+    "viewProfile": "View Profile"
+  },
+  "signIn": {
+    "jobSeeker": "Job Seeker",
+    "company": "Company",
+    "signInAsSeekerTitle": "Sign In as a Job Seeker",
+    "signUpAsSeekerTitle": "Sign Up as a Job Seeker",
+    "seekerDescription": "Find your next job now.",
+    "signInAsCompanyTitle": "Sign In as a Company",
+    "signUpAsCompanyTitle": "Sign Up as a Company",
+    "companyDescription": "Find the best talent for your company.",
+    "email": "Email",
+    "emailPlaceholder": "m@example.com",
+    "password": "Password",
+    "processing": "Processing...",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "noAccount": "Don't have an account? Sign up",
+    "hasAccount": "Already have an account? Sign in",
+    "authFailed": "Authentication failed"
+  }
+}

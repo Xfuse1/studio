@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useTranslation } from "react-i18next";
 
 interface CandidateCardProps {
   candidate: {
@@ -25,6 +26,7 @@ interface CandidateCardProps {
 }
 
 export default function CandidateCard({ candidate }: CandidateCardProps) {
+    const { t } = useTranslation();
     const avatarPlaceholder = PlaceHolderImages.find(p => p.id === candidate.avatar);
 
   return (
@@ -50,7 +52,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
           {candidate.summary}
         </p>
         <div className="flex flex-wrap gap-2">
-            <span className="font-medium">المهارات:</span>
+            <span className="font-medium">{t('candidateCard.skills')}</span>
             {candidate.skills.map((skill) => (
                 <Badge key={skill} variant="secondary" className="rounded-lg">{skill}</Badge>
             ))}
@@ -61,7 +63,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
             <MapPin className="w-4 h-4" />
             <span>{candidate.location}</span>
           </div>
-        <Button variant="outline" className="rounded-2xl w-full sm:w-auto">عرض الملف الشخصي</Button>
+        <Button variant="outline" className="rounded-2xl w-full sm:w-auto">{t('candidateCard.viewProfile')}</Button>
       </CardFooter>
     </Card>
   );

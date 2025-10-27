@@ -1,0 +1,61 @@
+{
+  "header": {
+    "title": "بوابة التوظيف",
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج"
+  },
+  "splash": {
+    "welcome": "أهلاً بك في بوابة التوظيف"
+  },
+  "search": {
+    "findYourDreamJob": "اعثر على وظيفة أحلامك",
+    "yourGateway": "بوابتك إلى الفرص المهنية الواعدة.",
+    "findTopTalent": "ابحث عن أفضل المواهب",
+    "thousandsOfCandidates": "الآلاف من المرشحين المؤهلين في انتظارك.",
+    "jobTitleOrKeyword": "المسمى الوظيفي أو الكلمة الرئيسية",
+    "jobTitlePlaceholder": "مثال: مهندس برمجيات",
+    "location": "الموقع",
+    "locationPlaceholder": "مثال: الرياض",
+    "search": "بحث",
+    "employmentType": "نوع التوظيف",
+    "all": "الكل",
+    "fullTime": "دوام كامل",
+    "partTime": "دوام جزئي",
+    "contract": "عقد",
+    "remoteOnly": "عن بعد فقط",
+    "loginRequiredTitle": "مطلوب تسجيل الدخول",
+    "loginRequiredDescription": "لعرض المرشحين، يجب عليك تسجيل الدخول كشركة أولاً.",
+    "noResultsTitle": "لم يتم العثور على نتائج",
+    "noResultsDescription": "حاول توسيع نطاق البحث أو استخدام كلمات رئيسية مختلفة.",
+    "searchFailedTitle": "فشل البحث",
+    "searchFailedDescription": "حدث خطأ أثناء جلب النتائج. قد يكون السبب متعلقًا بصلاحيات الوصول إلى البيانات (RLS).",
+    "unknownCompany": "شركة غير معروفة"
+  },
+  "jobCard": {
+    "applyNow": "التقديم الآن",
+    "posted": "نشرت"
+  },
+  "candidateCard": {
+    "skills": "المهارات:",
+    "viewProfile": "عرض الملف الشخصي"
+  },
+  "signIn": {
+    "jobSeeker": "باحث عن عمل",
+    "company": "شركة",
+    "signInAsSeekerTitle": "تسجيل دخول كباحث عن عمل",
+    "signUpAsSeekerTitle": "إنشاء حساب كباحث عن عمل",
+    "seekerDescription": "ابحث عن وظيفتك التالية الآن.",
+    "signInAsCompanyTitle": "تسجيل دخول كشركة",
+    "signUpAsCompanyTitle": "إنشاء حساب كشركة",
+    "companyDescription": "اعثر على أفضل المواهب لشركتك.",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "m@example.com",
+    "password": "كلمة المرور",
+    "processing": "جارٍ المعالجة…",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "noAccount": "ليس لديك حساب؟ أنشئ حساباً جديداً",
+    "hasAccount": "لديك حساب؟ سجّل الدخول",
+    "authFailed": "فشل التوثيق"
+  }
+}

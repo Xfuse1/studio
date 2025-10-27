@@ -12,7 +12,9 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Clock } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { formatDistanceToNow } from 'date-fns';
-import { ar } from 'date-fns/locale';
+import { ar, enUS } from 'date-fns/locale';
+import { useTranslation } from "react-i18next";
+import i18n from "@/lib/i18n";
 
 interface JobCardProps {
   job: {
@@ -27,12 +29,13 @@ interface JobCardProps {
 }
 
 export default function JobCard({ job }: JobCardProps) {
+  const { t } = useTranslation();
   const logoPlaceholder = PlaceHolderImages.find(p => p.id === job.logo);
 
-  let timeAgo = 'غير محدد';
+  let timeAgo = 'undefined';
   try {
     if (job.postedAt) {
-      timeAgo = formatDistanceToNow(new Date(job.postedAt), { addSuffix: true, locale: ar });
+      timeAgo = formatDistanceToNow(new Date(job.postedAt), { addSuffix: true, locale: i18n.language === 'ar' ? ar : enUS });
     }
   } catch (error) {
     console.error("Invalid date for job.postedAt:", job.postedAt);
@@ -76,7 +79,7 @@ export default function JobCard({ job }: JobCardProps) {
             <span>{timeAgo}</span>
           </div>
         </div>
-        <Button className="rounded-2xl w-full sm:w-auto">التقديم الآن</Button>
+        <Button className="rounded-2xl w-full sm:w-auto">{t('jobCard.applyNow')}</Button>
       </CardFooter>
     </Card>
   );

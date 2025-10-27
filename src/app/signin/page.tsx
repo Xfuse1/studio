@@ -10,31 +10,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from 'react-i18next';
 
 type UserRole = 'seeker' | 'company';
 
 export default function SignInPage() {
   const router = useRouter();
   const { signIn } = useAuth();
+  const { t } = useTranslation();
 
-  // تبويبات الدور
   const [role, setRole] = useState<UserRole>('seeker');
-
-  // وضع الشاشة: تسجيل دخول أم إنشاء حساب
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
 
-  // حقول النموذج
   const [email, setEmail] = useState(role === 'seeker' ? 'seeker@example.com' : 'company@example.com');
   const [password, setPassword] = useState('password');
 
-  // حالة عامة
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onTabChange = (value: string) => {
     const r = value as UserRole;
     setRole(r);
-    // مجرد قيمة افتراضية للمثال – احذفيها لو عايزة
     setEmail(r === 'seeker' ? 'seeker@example.com' : 'company@example.com');
   };
 
@@ -44,16 +40,14 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      // In a real app, you would validate credentials here
       if (!email || !password) {
         throw new Error('Please enter email and password');
       }
 
-      // Use the mock signIn function from AuthContext
       signIn(role);
       
     } catch (err: any) {
-      setError(err?.message ?? 'Authentication failed');
+      setError(err?.message ?? t('signIn.authFailed'));
     } finally {
       setLoading(false);
     }
@@ -62,11 +56,11 @@ export default function SignInPage() {
   const AuthForm = () => (
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="grid gap-2">
-        <Label htmlFor="email">البريد الإلكتروني</Label>
+        <Label htmlFor="email">{t('signIn.email')}</Label>
         <Input
           id="email"
           type="email"
-          placeholder="m@example.com"
+          placeholder={t('signIn.emailPlaceholder')}
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -74,7 +68,7 @@ export default function SignInPage() {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="password">كلمة المرور</Label>
+        <Label htmlFor="password">{t('signIn.password')}</Label>
         <Input
           id="password"
           type="password"
@@ -88,7 +82,7 @@ export default function SignInPage() {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <Button type="submit" className="w-full rounded-2xl" disabled={loading}>
-        {loading ? 'جارٍ المعالجة…' : mode === 'signin' ? 'تسجيل الدخول' : 'إنشاء حساب'}
+        {loading ? t('signIn.processing') : mode === 'signin' ? t('signIn.signIn') : t('signIn.signUp')}
       </Button>
 
       <button
@@ -96,7 +90,7 @@ export default function SignInPage() {
         onClick={() => setMode((m) => (m === 'signin' ? 'signup' : 'signin'))}
         className="text-sm text-primary mt-2"
       >
-        {mode === 'signin' ? 'ليس لديك حساب؟ أنشئ حساباً جديداً' : 'لديك حساب؟ سجّل الدخول'}
+        {mode === 'signin' ? t('signIn.noAccount') : t('signIn.hasAccount')}
       </button>
     </form>
   );
@@ -106,15 +100,15 @@ export default function SignInPage() {
       <div className="w-full max-w-md animate-fade-in-up">
         <Tabs defaultValue="seeker" onValueChange={onTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="seeker">باحث عن عمل</TabsTrigger>
-            <TabsTrigger value="company">شركة</TabsTrigger>
+            <TabsTrigger value="seeker">{t('signIn.jobSeeker')}</TabsTrigger>
+            <TabsTrigger value="company">{t('signIn.company')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="seeker">
             <Card className="rounded-2xl shadow-lg">
               <CardHeader>
-                <CardTitle>{mode === 'signin' ? 'تسجيل دخول كباحث عن عمل' : 'إنشاء حساب كباحث عن عمل'}</CardTitle>
-                <CardDescription>ابحث عن وظيفتك التالية الآن.</CardDescription>
+                <CardTitle>{mode === 'signin' ? t('signIn.signInAsSeekerTitle') : t('signIn.signUpAsSeekerTitle')}</CardTitle>
+                <CardDescription>{t('signIn.seekerDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <AuthForm />
@@ -125,8 +119,8 @@ export default function SignInPage() {
           <TabsContent value="company">
             <Card className="rounded-2xl shadow-lg">
               <CardHeader>
-                <CardTitle>{mode === 'signin' ? 'تسجيل دخول كشركة' : 'إنشاء حساب كشركة'}</CardTitle>
-                <CardDescription>اعثر على أفضل المواهب لشركتك.</CardDescription>
+                <CardTitle>{mode === 'signin' ? t('signIn.signInAsCompanyTitle') : t('signIn.signUpAsCompanyTitle')}</CardTitle>
+                <CardDescription>{t('signIn.companyDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <AuthForm />

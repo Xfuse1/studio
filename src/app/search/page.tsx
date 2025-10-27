@@ -10,6 +10,7 @@ import { Terminal } from 'lucide-react';
 import type { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export interface SearchParams {
   q: string;
@@ -21,6 +22,7 @@ export interface SearchParams {
 export default function SearchPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -45,8 +47,8 @@ export default function SearchPage() {
   
     if (!supabase) {
       toast({
-        title: 'فشل الاتصال بالداتا بيز',
-        description: 'تأكد من إعداد متغيرات البيئة الخاصة بـ Supabase بشكل صحيح.',
+        title: t('search.searchFailedTitle'),
+        description: 'Supabase client not initialized.',
         variant: "destructive"
       });
       setIsLoading(false);
@@ -76,7 +78,7 @@ export default function SearchPage() {
         const adaptedJobs = data.map(job => ({
           id: job.id,
           title: job.title,
-          company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
+          company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || t('search.unknownCompany'),
           location: job.location,
           description: job.description,
           postedAt: job.created_at,
@@ -139,8 +141,8 @@ export default function SearchPage() {
     } catch (err: any) {
       console.error("Search Error:", err);
       toast({
-        title: 'فشل البحث',
-        description: err?.message || 'حدث خطأ أثناء جلب النتائج. قد يكون السبب متعلقًا بصلاحيات الوصول إلى البيانات (RLS).',
+        title: t('search.searchFailedTitle'),
+        description: err?.message || t('search.searchFailedDescription'),
         variant: "destructive"
       });
       setSearchResults([]);
@@ -148,7 +150,7 @@ export default function SearchPage() {
       setIsLoading(false);
       console.log('[performSearch] Search finished.');
     }
-  }, [user, currentRole, toast]);
+  }, [user, currentRole, toast, t]);
 
 
   useEffect(() => {
@@ -176,10 +178,10 @@ export default function SearchPage() {
     <div className="container mx-auto p-4 md:p-8">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold font-headline text-center mb-2">
-          {currentRole === 'company' ? 'ابحث عن أفضل المواهب' : 'اعثر على وظيفة أحلامك'}
+          {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
         </h1>
         <p className="text-muted-foreground text-center text-lg">
-          {currentRole === 'company' ? 'الآلاف من المرشحين المؤهلين في انتظارك.' : 'بوابتك إلى الفرص المهنية الواعدة.'}
+          {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
         </p>
       </div>
 
@@ -190,9 +192,9 @@ export default function SearchPage() {
       {showLoginPrompt && (
          <Alert variant="default" className="max-w-2xl mx-auto rounded-2xl">
           <Terminal className="h-4 w-4" />
-          <AlertTitle>مطلوب تسجيل الدخول</AlertTitle>
+          <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
           <AlertDescription>
-            لعرض المرشحين، يجب عليك تسجيل الدخول كشركة أولاً.
+            {t('search.loginRequiredDescription')}
           </AlertDescription>
         </Alert>
       )}
@@ -219,8 +221,8 @@ export default function SearchPage() {
       ) : (
         !showLoginPrompt && (
             <div className="text-center py-16">
-                <h2 className="text-2xl font-semibold mb-2">لم يتم العثور على نتائج</h2>
-                <p className="text-muted-foreground">حاول توسيع نطاق البحث أو استخدام كلمات رئيسية مختلفة.</p>
+                <h2 className="text-2xl font-semibold mb-2">{t('search.noResultsTitle')}</h2>
+                <p className="text-muted-foreground">{t('search.noResultsDescription')}</p>
             </div>
         )
       )}
