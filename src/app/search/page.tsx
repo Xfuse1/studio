@@ -10,7 +10,6 @@ import { Terminal } from 'lucide-react';
 import type { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
-import { mockCandidates } from '@/lib/mock-data'; // Keep for company role until implemented
 
 export interface SearchParams {
   q: string;
@@ -92,13 +91,33 @@ export default function SearchPage() {
           setIsLoading(false);
           return;
         }
-        // This part still uses mock data, should be replaced with supabase query to seeker_profiles
-        const results = mockCandidates.filter(candidate => 
-          (candidate.name.toLowerCase().includes(params.q.toLowerCase()) || 
-           candidate.title.toLowerCase().includes(params.q.toLowerCase())) && 
-          candidate.location.toLowerCase().includes(params.loc.toLowerCase())
-        );
-        setSearchResults(results);
+
+        let query = supabase.from('seeker_profiles').select('*');
+
+        if (params.q) {
+            query = query.or(`full_name.ilike.%${params.q}%,job_title.ilike.%${params.q}%`);
+        }
+        if (params.loc) {
+            query = query.ilike('country', `%${params.loc}%`);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+            throw error;
+        }
+
+        const adaptedCandidates = data.map(candidate => ({
+            id: candidate.id,
+            name: candidate.full_name,
+            title: candidate.job_title,
+            location: candidate.country,
+            skills: candidate.skills || [],
+            summary: candidate.bio,
+            avatar: candidate.avatar_url || 'candidate-avatar-1', // Fallback to placeholder
+        }));
+        
+        setSearchResults(adaptedCandidates);
       }
     } catch (err: any) {
       console.error("Search Error:", err);
