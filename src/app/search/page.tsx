@@ -20,7 +20,6 @@ import { supabase } from '@/lib/supabaseClient';
 
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
-import { mockCandidates } from '@/lib/mock-data';
 
 export type SearchParams = {
   q: string;
@@ -56,18 +55,38 @@ export default function SearchPage() {
     setLoading(true);
     
     try {
-      if (user.role === 'seeker') {
-        let { data: jobs, error: jobsError } = await supabase
-          .from('jobs')
-          .select('*, companies(name_ar, name_en)')
-          .eq('is_active', true)
-          .ilike('title', `%${params.q}%`)
-          .ilike('location', `%${params.loc}%`);
+        console.log('🔍 بداية البحث:', { jobTitle: params.q, location: params.loc })
         
-        if (jobsError) throw jobsError;
+        // استعلام الوظائف
+        let query = supabase
+          .from('jobs')
+          .select(`
+            *,
+            companies (
+              name_ar,
+              name_en
+            )
+          `)
+          .eq('is_active', true)
 
-        if (jobs && jobs.length > 0) {
-            const adaptedJobs = jobs.map(job => ({
+        if (params.q) {
+            query = query.ilike('title', `%${params.q}%`);
+        }
+        if (params.loc) {
+            query = query.ilike('location', `%${params.loc}%`);
+        }
+        
+        const { data, error } = await query;
+
+        console.log('📊 نتيجة البحث في jobs:', { 
+          data, 
+          error,
+          searchTerm: params.q,
+          dataLength: data?.length 
+        })
+        
+        if (!error && data) {
+            const adaptedJobs = data.map(job => ({
                 id: job.id,
                 title: job.title,
                 company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
@@ -78,27 +97,27 @@ export default function SearchPage() {
             }));
             setResults(adaptedJobs);
         } else {
+            console.error('❌ خطأ في البحث:', error);
             setResults([]);
+            if (error) {
+                toast({
+                    title: 'فشل البحث',
+                    description: error.message,
+                    variant: "destructive"
+                });
+            }
         }
-
-      } else { // 'company' role
-        const searchResults = mockCandidates.filter(candidate => 
-          (candidate.name.toLowerCase().includes(params.q.toLowerCase()) || 
-           candidate.title.toLowerCase().includes(params.q.toLowerCase())) &&
-          candidate.location.toLowerCase().includes(params.loc.toLowerCase())
-        );
-        await new Promise(resolve => setTimeout(resolve, 300)); // simulate network
-        setResults(searchResults);
-      }
+      
     } catch (err: any) {
-      toast({
-        title: 'فشل البحث',
-        description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
-        variant: "destructive"
-      });
-      setResults([]);
+        console.error('❌ خطأ غير متوقع:', err)
+        toast({
+            title: 'فشل البحث',
+            description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
+            variant: "destructive"
+        });
+        setResults([]);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   }, [user, toast]);
 
