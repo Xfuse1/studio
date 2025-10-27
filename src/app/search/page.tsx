@@ -119,7 +119,7 @@ export default function SearchPage() {
     } finally {
         setLoading(false);
     }
-  }, [user, toast]);
+  }, [user]);
 
   // Initial data load effect
   useEffect(() => {
