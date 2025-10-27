@@ -3,7 +3,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import Header from "@/components/Header";
-import './i18n'; // Import the i18n configuration
+import '@/lib/i18n'; // Import the i18n configuration
 
 export const metadata: Metadata = {
   title: "Employed",

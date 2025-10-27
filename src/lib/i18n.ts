@@ -9,7 +9,7 @@ import enTranslation from '@/locales/en.json';
 
 i18n
   .use(LanguageDetector)
-  .use(initReactI__next)
+  .use(initReactI18next)
   .init({
     resources: {
       en: {
