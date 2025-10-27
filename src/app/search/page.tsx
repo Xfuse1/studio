@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
@@ -11,6 +11,7 @@ import type { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 
 export interface SearchParams {
   q: string;
@@ -24,6 +25,7 @@ export default function SearchPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -164,6 +166,16 @@ export default function SearchPage() {
   }, [searchParams, performSearch]);
 
   const handleSearch = (params: SearchParams) => {
+    if (!user) {
+      toast({
+        title: "مطلوب تسجيل الدخول",
+        description: "يجب تسجيل الدخول للوصول إلى خيارات البحث المتقدمة",
+        action: (
+          <Button onClick={() => router.push('/signin')}>تسجيل الدخول</Button>
+        ),
+      });
+      return;
+    }
     const url = new URL(window.location.toString());
     url.searchParams.set('q', params.q);
     url.searchParams.set('loc', params.loc);
