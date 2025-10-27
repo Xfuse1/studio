@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -6,10 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
-import { mockJobs, mockCandidates } from '@/lib/mock-data';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import type { UserRole } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/use-toast';
+import { mockCandidates } from '@/lib/mock-data'; // Keep for company role until implemented
 
 export interface SearchParams {
   q: string;
@@ -20,10 +21,11 @@ export interface SearchParams {
 
 export default function SearchPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   
   const [currentRole, setCurrentRole] = useState<UserRole | undefined>(undefined);
@@ -40,33 +42,76 @@ export default function SearchPage() {
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
     setShowLoginPrompt(false);
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    let results: any[] = [];
-    if (currentRole === 'seeker') {
-      results = mockJobs.filter(job => 
-        job.title.toLowerCase().includes(params.q.toLowerCase()) &&
-        job.location.toLowerCase().includes(params.loc.toLowerCase())
-      );
-    } else if (currentRole === 'company') {
-       if (!user) {
-        setShowLoginPrompt(true);
-        setSearchResults([]);
-        setIsLoading(false);
-        return;
-      }
-      results = mockCandidates.filter(candidate => 
-        (candidate.name.toLowerCase().includes(params.q.toLowerCase()) || 
-         candidate.title.toLowerCase().includes(params.q.toLowerCase())) && 
-        candidate.location.toLowerCase().includes(params.loc.toLowerCase())
-      );
+  
+    if (!supabase) {
+      toast({
+        title: 'فشل الاتصال بالداتا بيز',
+        description: 'تأكد من إعداد متغيرات البيئة الخاصة بـ Supabase بشكل صحيح.',
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
     }
-    
-    setSearchResults(results);
-    setIsLoading(false);
-  }, [user, currentRole]);
+  
+    try {
+      if (currentRole === 'seeker') {
+        let query = supabase
+          .from('jobs')
+          .select('*, companies (name_ar, name_en)')
+          .eq('is_active', true);
+  
+        if (params.q) {
+          query = query.ilike('title', `%${params.q}%`);
+        }
+        if (params.loc) {
+          query = query.ilike('location', `%${params.loc}%`);
+        }
+  
+        const { data, error } = await query;
+  
+        if (error) {
+          throw error;
+        }
+  
+        const adaptedJobs = data.map(job => ({
+          id: job.id,
+          title: job.title,
+          company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
+          location: job.location,
+          description: job.description,
+          postedAt: job.created_at,
+          logo: (job.companies as any)?.logo_url || 'company-logo-1', // Fallback to placeholder
+        }));
+  
+        setSearchResults(adaptedJobs);
+
+      } else if (currentRole === 'company') {
+         if (!user) {
+          setShowLoginPrompt(true);
+          setSearchResults([]);
+          setIsLoading(false);
+          return;
+        }
+        // This part still uses mock data, should be replaced with supabase query to seeker_profiles
+        const results = mockCandidates.filter(candidate => 
+          (candidate.name.toLowerCase().includes(params.q.toLowerCase()) || 
+           candidate.title.toLowerCase().includes(params.q.toLowerCase())) && 
+          candidate.location.toLowerCase().includes(params.loc.toLowerCase())
+        );
+        setSearchResults(results);
+      }
+    } catch (err: any) {
+      console.error("Search Error:", err);
+      toast({
+        title: 'فشل البحث',
+        description: err?.message || 'حدث خطأ أثناء جلب النتائج.',
+        variant: "destructive"
+      });
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, currentRole, toast]);
 
 
   useEffect(() => {
