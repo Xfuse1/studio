@@ -14,7 +14,7 @@ export default function ResultsList({ results, role }: ResultsListProps) {
         <div 
           key={item.id} 
           className="animate-fade-in-up"
-          style={{ animationDelay: `${index * 100}ms`}}
+          style={{ animationDelay: `${index * 150}ms`}}
         >
           {role === 'seeker' ? <JobCard job={item} /> : <CandidateCard candidate={item} />}
         </div>

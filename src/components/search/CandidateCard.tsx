@@ -43,7 +43,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
     }
 
   return (
-    <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
+    <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       <CardHeader className="flex flex-row items-start gap-4">
         {avatarPlaceholder && (
             <Image
