@@ -40,12 +40,12 @@ function SearchComponent() {
   const handleSearch = useCallback(async (jobTitle: string, location: string) => {
     if (!supabase) {
         toast({ title: "Database client not available.", variant: "destructive" });
+        setLoading(false);
         return;
     }
 
     setLoading(true);
-    setSearchAttempted(true);
-    setResults([]);
+    setSearchAttempted(true); // Mark that a search is being attempted
     
     let query = supabase
       .from('seeker_profiles')
@@ -73,6 +73,7 @@ function SearchComponent() {
             description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
             variant: "destructive"
         });
+        setResults([]); // Clear results on error
     } finally {
         setLoading(false);
     }
@@ -80,6 +81,10 @@ function SearchComponent() {
   
   // Effect to trigger search when component mounts or URL params change
   useEffect(() => {
+    // Only set searchAttempted if there are search terms in the URL on load
+    if (q || loc) {
+      setSearchAttempted(true);
+    }
     handleSearch(q, loc);
   }, [q, loc, handleSearch]);
 
@@ -130,7 +135,7 @@ function SearchComponent() {
                     </div>
                     <Button 
                         type="submit"
-                        className="w-full rounded-2xl h-10 md:col-span-1" 
+                        className="w-full rounded-2xl h-10 md:col-span-1 lg:col-span-3" 
                         disabled={loading}
                     >
                         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'بحث'}
