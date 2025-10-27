@@ -45,10 +45,12 @@ export default function SearchPage() {
       .select('*');
 
     if (jobTitle) {
-      query = query.ilike('job_title', `%${jobTitle}%`);
+      // بحث في job_title و full_name
+      query = query.or(`job_title.ilike.%${jobTitle}%,full_name.ilike.%${jobTitle}%`)
     }
+    
     if (location) {
-      query = query.ilike('country', `%${location}%`);
+      query = query.ilike('country', `%${location}%`)
     }
 
     try {
