@@ -91,7 +91,7 @@ export default function SearchPage() {
       } else if (currentRole === 'company') {
         console.log('[performSearch] Company role detected. Preparing to search for candidates.');
         
-        let query = supabase.from('seeker_profiles').select('*');
+        let query = supabase.from('seeker_profiles').select('*, skills(name)');
 
         // Combined search for main query parameter 'q'
         if (params.q) {
@@ -125,7 +125,7 @@ export default function SearchPage() {
             name: candidate.full_name,
             title: candidate.job_title,
             location: candidate.country,
-            skills: candidate.skills ? (candidate.skills as string).split(',').map(s => s.trim()) : [],
+            skills: Array.isArray(candidate.skills) ? candidate.skills.map((s: any) => s.name) : [],
             summary: candidate.bio,
             avatar: candidate.avatar_url || 'candidate-avatar-1', // Fallback to placeholder
         }));
