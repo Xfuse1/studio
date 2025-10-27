@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
@@ -31,7 +30,7 @@ function SearchComponent() {
   const { toast } = useToast();
 
   const [results, setResults] = useState<SeekerProfile[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start loading initially
   const [searchAttempted, setSearchAttempted] = useState(false);
 
   // Get search params from URL
@@ -79,21 +78,24 @@ function SearchComponent() {
     }
   }, [toast]);
   
-  // Effect to trigger search when URL params change
+  // Effect to trigger search when component mounts or URL params change
   useEffect(() => {
-    if (q || loc) {
-      handleSearch(q, loc);
-    } else {
-      setResults([]);
-      setSearchAttempted(false);
-    }
+    handleSearch(q, loc);
   }, [q, loc, handleSearch]);
 
 
   const handleUrlUpdate = (newParams: { q: string; loc: string }) => {
-    const urlParams = new URLSearchParams();
-    if (newParams.q) urlParams.set('q', newParams.q);
-    if (newParams.loc) urlParams.set('loc', newParams.loc);
+    const urlParams = new URLSearchParams(searchParams);
+    if (newParams.q) {
+        urlParams.set('q', newParams.q);
+    } else {
+        urlParams.delete('q');
+    }
+    if (newParams.loc) {
+        urlParams.set('loc', newParams.loc);
+    } else {
+        urlParams.delete('loc');
+    }
     router.push(`/search?${urlParams.toString()}`);
   };
 
@@ -103,14 +105,19 @@ function SearchComponent() {
         <section className="mb-12 animate-fade-in-up">
            <Card className="rounded-2xl shadow-lg overflow-hidden">
              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleUrlUpdate({ 
+                        q: (document.getElementById('q') as HTMLInputElement).value, 
+                        loc: (document.getElementById('loc') as HTMLInputElement).value 
+                    });
+                }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                     <div className="lg:col-span-2 grid gap-2">
                         <Label htmlFor="q">المسمى الوظيفي أو الكلمة الرئيسية</Label>
                         <Input
                             id="q"
                             defaultValue={q}
                             placeholder="مثال: مطور ويب"
-                            onKeyDown={(e) => e.key === 'Enter' && handleUrlUpdate({ q: (e.target as HTMLInputElement).value, loc })}
                         />
                     </div>
                     <div className="grid gap-2">
@@ -119,20 +126,16 @@ function SearchComponent() {
                             id="loc"
                             defaultValue={loc}
                             placeholder="مثال: مصر"
-                             onKeyDown={(e) => e.key === 'Enter' && handleUrlUpdate({ q, loc: (e.target as HTMLInputElement).value })}
                         />
                     </div>
                     <Button 
-                        onClick={() => handleUrlUpdate({ 
-                            q: (document.getElementById('q') as HTMLInputElement).value, 
-                            loc: (document.getElementById('loc') as HTMLInputElement).value 
-                        })} 
+                        type="submit"
                         className="w-full rounded-2xl h-10 md:col-span-1" 
                         disabled={loading}
                     >
                         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'بحث'}
                     </Button>
-                </div>
+                </form>
              </CardContent>
            </Card>
         </section>
