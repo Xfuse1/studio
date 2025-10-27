@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
+import { mockCandidates } from '@/lib/mock-data'; // Keep for company search until fully implemented
 
 export type SearchParams = {
   q: string;
@@ -42,7 +43,7 @@ export default function SearchPage() {
       setShowLoginPrompt(true);
       return;
     }
-    
+
     if (!supabase) {
       toast({
         title: 'فشل الاتصال بالداتا بيز',
@@ -55,9 +56,9 @@ export default function SearchPage() {
     setLoading(true);
     
     try {
-        console.log('🔍 بداية البحث:', { jobTitle: params.q, location: params.loc })
+      if (user.role === 'seeker') {
+        console.log('🔍 بداية البحث عن وظائف:', { jobTitle: params.q, location: params.loc });
         
-        // استعلام الوظائف
         let query = supabase
           .from('jobs')
           .select(`
@@ -67,13 +68,13 @@ export default function SearchPage() {
               name_en
             )
           `)
-          .eq('is_active', true)
+          .eq('is_active', true);
 
         if (params.q) {
-            query = query.ilike('title', `%${params.q}%`);
+          query = query.ilike('title', `%${params.q}%`);
         }
         if (params.loc) {
-            query = query.ilike('location', `%${params.loc}%`);
+          query = query.ilike('location', `%${params.loc}%`);
         }
         
         const { data, error } = await query;
@@ -83,33 +84,54 @@ export default function SearchPage() {
           error,
           searchTerm: params.q,
           dataLength: data?.length 
-        })
+        });
         
-        if (!error && data) {
-            const adaptedJobs = data.map(job => ({
-                id: job.id,
-                title: job.title,
-                company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
-                location: job.location,
-                description: job.description,
-                postedAt: job.created_at,
-                logo: 'company-logo-1' // Using placeholder logo for now
-            }));
-            setResults(adaptedJobs);
+        if (error) throw error;
+
+        if (data) {
+          const adaptedJobs = data.map(job => ({
+            id: job.id,
+            title: job.title,
+            company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
+            location: job.location,
+            description: job.description,
+            postedAt: job.created_at,
+            logo: 'company-logo-1' // Using placeholder for now
+          }));
+          setResults(adaptedJobs);
         } else {
-            console.error('❌ خطأ في البحث:', error);
-            setResults([]);
-            if (error) {
-                toast({
-                    title: 'فشل البحث',
-                    description: error.message,
-                    variant: "destructive"
-                });
-            }
+          setResults([]);
         }
+      } else { // User is a 'company'
+        console.log('🔍 بداية البحث عن مرشحين:', { nameOrTitle: params.q, location: params.loc });
+        
+        let query = supabase.from('seeker_profiles').select('*');
+
+        if (params.q) {
+          query = query.or(`job_title.ilike.%${params.q}%,full_name.ilike.%${params.q}%`);
+        }
+        if (params.loc) {
+          query = query.ilike('country', `%${params.loc}%`);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const adaptedCandidates = (data || []).map(candidate => ({
+          id: candidate.id,
+          name: candidate.full_name,
+          title: candidate.job_title,
+          location: candidate.country,
+          skills: candidate.skills || [],
+          summary: `ملخص تعريفي للمرشح ${candidate.full_name}`, // Placeholder summary
+          avatar: 'candidate-avatar-1' // Placeholder avatar
+        }));
+
+        setResults(adaptedCandidates);
+      }
       
     } catch (err: any) {
-        console.error('❌ خطأ غير متوقع:', err)
+        console.error('❌ خطأ في البحث:', err);
         toast({
             title: 'فشل البحث',
             description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
@@ -119,7 +141,7 @@ export default function SearchPage() {
     } finally {
         setLoading(false);
     }
-  }, [user]);
+  }, [user]); // Removed 'toast' from dependencies to prevent infinite loop
 
   // Initial data load effect
   useEffect(() => {
