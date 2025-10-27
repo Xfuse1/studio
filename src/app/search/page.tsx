@@ -59,7 +59,7 @@ export default function SearchPage() {
       if (user.role === 'seeker') {
         let { data: jobs, error: jobsError } = await supabase
           .from('jobs')
-          .select('*, companies(name)')
+          .select('*, companies(name_ar, name_en)')
           .eq('is_active', true)
           .ilike('title', `%${params.q}%`)
           .ilike('location', `%${params.loc}%`);
@@ -70,7 +70,7 @@ export default function SearchPage() {
             const adaptedJobs = jobs.map(job => ({
                 id: job.id,
                 title: job.title,
-                company: (job.companies as any)?.name || 'شركة غير معروفة',
+                company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || 'شركة غير معروفة',
                 location: job.location,
                 description: job.description,
                 postedAt: job.created_at,
