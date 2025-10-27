@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -19,7 +20,7 @@ import { supabase } from '@/lib/supabaseClient';
 
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
-import { mockCandidates } from '@/lib/mock-data'; // Keep mock candidates for now
+import { mockCandidates } from '@/lib/mock-data';
 
 export type SearchParams = {
   q: string;
@@ -57,34 +58,51 @@ export default function SearchPage() {
     try {
       if (user.role === 'seeker') {
         // Fetch real jobs
-        let query = supabase
+        let jobsQuery = supabase
           .from('jobs')
-          .select('*, company:companies(name)')
+          .select('*')
           .eq('is_active', true);
 
         if (params.q) {
-          query = query.ilike('title', `%${params.q}%`);
+          jobsQuery = jobsQuery.ilike('title', `%${params.q}%`);
         }
         if (params.loc) {
-          query = query.ilike('location', `%${params.loc}%`);
+          jobsQuery = jobsQuery.ilike('location', `%${params.loc}%`);
         }
 
-        const { data, error } = await query;
+        const { data: jobs, error: jobsError } = await jobsQuery;
         
-        if (error) throw error;
+        if (jobsError) throw jobsError;
 
-        // Adapt Supabase data to JobCard props
-        const adaptedJobs = data.map(job => ({
-            id: job.id,
-            title: job.title,
-            company: job.company?.name || 'شركة غير معروفة',
-            location: job.location,
-            description: job.description,
-            postedAt: job.created_at,
-            logo: 'company-logo-1' // Using placeholder logo for now
-        }));
-        
-        setResults(adaptedJobs);
+        if (jobs && jobs.length > 0) {
+            // Get unique company IDs from the jobs
+            const companyIds = [...new Set(jobs.map(job => job.company_id))];
+
+            // Fetch the corresponding companies
+            const { data: companies, error: companiesError } = await supabase
+                .from('companies')
+                .select('id, name')
+                .in('id', companyIds);
+            
+            if (companiesError) throw companiesError;
+            
+            // Create a map of companyId to company name
+            const companyMap = new Map(companies.map(c => [c.id, c.name]));
+            
+            // Adapt the job data with company names
+            const adaptedJobs = jobs.map(job => ({
+                id: job.id,
+                title: job.title,
+                company: companyMap.get(job.company_id) || 'شركة غير معروفة',
+                location: job.location,
+                description: job.description,
+                postedAt: job.created_at,
+                logo: 'company-logo-1' // Using placeholder logo for now
+            }));
+            setResults(adaptedJobs);
+        } else {
+            setResults([]);
+        }
 
       } else { // 'company' role
         // For now, we'll keep filtering mock candidates
