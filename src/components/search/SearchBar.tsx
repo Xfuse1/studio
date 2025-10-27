@@ -94,8 +94,8 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Switch id="remote-only" checked={remote} onCheckedChange={setRemote} />
               <Label htmlFor="remote-only">{t('search.remoteOnly')}</Label>
+              <Switch id="remote-only" checked={remote} onCheckedChange={setRemote} />
             </div>
           </div>
         </form>
