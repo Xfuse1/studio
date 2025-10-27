@@ -21,6 +21,25 @@ type SeekerProfile = {
   avatar_url: string; // Assuming an avatar_url column exists
 };
 
+// Smart search translation map
+const translationMap: { [key: string]: string[] } = {
+    'programmer': ['مطور', 'مبرمج', 'برمجة', 'برمجيات'],
+    'marketing': ['تسويق', 'تسويق الكتروني'],
+    'accountant': ['محاسب', 'محاسبة'],
+    'pr': ['علاقات عامة'],
+    'designer': ['مصمم'],
+};
+
+// Function to find the English key from an Arabic value
+const getEnglishJobTitle = (arabicTerm: string): string | null => {
+    for (const englishKey in translationMap) {
+        if (translationMap[englishKey].some(term => arabicTerm.includes(term))) {
+            return englishKey;
+        }
+    }
+    return null;
+}
+
 export default function SearchPage() {
   const { toast } = useToast();
   const [results, setResults] = useState<SeekerProfile[]>([]);
@@ -40,17 +59,27 @@ export default function SearchPage() {
         return;
     }
     
-    let query = supabase
-      .from('seeker_profiles')
-      .select('*');
+    let query = supabase.from('seeker_profiles').select('*');
 
     if (jobTitle) {
-      // بحث في job_title و full_name
-      query = query.or(`job_title.ilike.%${jobTitle}%,full_name.ilike.%${jobTitle}%`)
+        const englishEquivalent = getEnglishJobTitle(jobTitle);
+        console.log('🗣️ الترجمة الإنجليزية:', englishEquivalent);
+
+        // Build a dynamic OR query
+        const orConditions = [
+            `full_name.ilike.%${jobTitle}%`, // Search by name in Arabic
+            `job_title.ilike.%${jobTitle}%`, // Search if user types in English directly
+        ];
+
+        if (englishEquivalent) {
+            orConditions.push(`job_title.ilike.%${englishEquivalent}%`); // Search by translated English title
+        }
+        
+        query = query.or(orConditions.join(','));
     }
     
     if (location) {
-      query = query.ilike('country', `%${location}%`)
+      query = query.ilike('country', `%${location}%`);
     }
 
     try {
@@ -60,12 +89,14 @@ export default function SearchPage() {
         if (error) throw error;
         
         if (data) {
+          console.log('✅ عدد النتائج:', data.length);
+          console.log('📝 البيانات:', data);
           setResults(data as SeekerProfile[]);
         } else {
           setResults([]);
         }
     } catch (err: any) {
-        console.error('خطأ في البحث:', err);
+        console.error('❌ خطأ في البحث:', err);
         toast({
             title: 'فشل البحث',
             description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
@@ -78,6 +109,7 @@ export default function SearchPage() {
   }, [toast]);
   
   useEffect(() => {
+    // Initial load of all candidates
     searchSeekers('', '');
   }, [searchSeekers]);
   
@@ -111,7 +143,7 @@ export default function SearchPage() {
                             id="q"
                             value={searchParams.jobTitle}
                             onChange={handleJobTitleChange}
-                            placeholder="مثال: مطور ويب"
+                            placeholder="مثال: مطور ويب، محاسب، marketing"
                         />
                     </div>
                     <div className="grid gap-2">
