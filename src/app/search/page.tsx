@@ -15,10 +15,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
-import { mockJobs, mockCandidates } from '@/lib/mock-data';
+import { mockCandidates } from '@/lib/mock-data'; // Keep mock candidates for now
 
 export type SearchParams = {
   q: string;
@@ -41,29 +42,60 @@ export default function SearchPage() {
       setShowLoginPrompt(true);
       return;
     }
+    
+    if (!supabase) {
+      toast({
+        title: 'فشل الاتصال بالداتا بيز',
+        description: 'تأكد من إعداد متغيرات البيئة الخاصة بـ Supabase بشكل صحيح.',
+        variant: "destructive"
+      });
+      return;
+    }
 
     setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-
+    
     try {
-      let searchResults: any[] = [];
       if (user.role === 'seeker') {
-        // Search for jobs
-        searchResults = mockJobs.filter(job => 
-          (job.title.toLowerCase().includes(params.q.toLowerCase()) || 
-           job.description.toLowerCase().includes(params.q.toLowerCase())) &&
-          job.location.toLowerCase().includes(params.loc.toLowerCase())
-        );
-      } else {
-        // Search for candidates
-        searchResults = mockCandidates.filter(candidate => 
+        // Fetch real jobs
+        let query = supabase
+          .from('jobs')
+          .select('*, company:companies(name)')
+          .eq('is_active', true);
+
+        if (params.q) {
+          query = query.ilike('title', `%${params.q}%`);
+        }
+        if (params.loc) {
+          query = query.ilike('location', `%${params.loc}%`);
+        }
+
+        const { data, error } = await query;
+        
+        if (error) throw error;
+
+        // Adapt Supabase data to JobCard props
+        const adaptedJobs = data.map(job => ({
+            id: job.id,
+            title: job.title,
+            company: job.company?.name || 'شركة غير معروفة',
+            location: job.location,
+            description: job.description,
+            postedAt: job.created_at,
+            logo: 'company-logo-1' // Using placeholder logo for now
+        }));
+        
+        setResults(adaptedJobs);
+
+      } else { // 'company' role
+        // For now, we'll keep filtering mock candidates
+        const searchResults = mockCandidates.filter(candidate => 
           (candidate.name.toLowerCase().includes(params.q.toLowerCase()) || 
            candidate.title.toLowerCase().includes(params.q.toLowerCase())) &&
           candidate.location.toLowerCase().includes(params.loc.toLowerCase())
         );
+        await new Promise(resolve => setTimeout(resolve, 300)); // simulate network
+        setResults(searchResults);
       }
-      setResults(searchResults);
     } catch (err: any) {
       toast({
         title: 'فشل البحث',
@@ -76,32 +108,20 @@ export default function SearchPage() {
     }
   }, [user, toast]);
 
-  // Initial load based on user type
+  // Initial data load effect
   useEffect(() => {
     if (user) {
-      setLoading(true);
-      setTimeout(() => {
-        setResults(user.role === 'seeker' ? mockJobs : mockCandidates);
-        setLoading(false);
-      }, 500);
+      performSearch({ q: '', loc: '', type: 'all', remote: false });
     } else {
       setResults([]);
     }
-  }, [user]);
-
-  const handleInteraction = () => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return false;
-    }
-    return true;
-  };
+  }, [user, performSearch]);
   
   return (
     <>
       <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="max-w-4xl mx-auto">
-          <section className="mb-12 animate-fade-in-up" onFocus={handleInteraction}>
+          <section className="mb-12 animate-fade-in-up">
             <SearchBar onSearch={performSearch} isLoading={loading} />
           </section>
 
