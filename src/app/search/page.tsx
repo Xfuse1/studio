@@ -57,43 +57,20 @@ export default function SearchPage() {
     
     try {
       if (user.role === 'seeker') {
-        // Fetch real jobs
-        let jobsQuery = supabase
+        let { data: jobs, error: jobsError } = await supabase
           .from('jobs')
-          .select('*')
-          .eq('is_active', true);
-
-        if (params.q) {
-          jobsQuery = jobsQuery.ilike('title', `%${params.q}%`);
-        }
-        if (params.loc) {
-          jobsQuery = jobsQuery.ilike('location', `%${params.loc}%`);
-        }
-
-        const { data: jobs, error: jobsError } = await jobsQuery;
+          .select('*, companies(name)')
+          .eq('is_active', true)
+          .ilike('title', `%${params.q}%`)
+          .ilike('location', `%${params.loc}%`);
         
         if (jobsError) throw jobsError;
 
         if (jobs && jobs.length > 0) {
-            // Get unique company IDs from the jobs
-            const companyIds = [...new Set(jobs.map(job => job.company_id))];
-
-            // Fetch the corresponding companies
-            const { data: companies, error: companiesError } = await supabase
-                .from('companies')
-                .select('id, name')
-                .in('id', companyIds);
-            
-            if (companiesError) throw companiesError;
-            
-            // Create a map of companyId to company name
-            const companyMap = new Map(companies.map(c => [c.id, c.name]));
-            
-            // Adapt the job data with company names
             const adaptedJobs = jobs.map(job => ({
                 id: job.id,
                 title: job.title,
-                company: companyMap.get(job.company_id) || 'شركة غير معروفة',
+                company: (job.companies as any)?.name || 'شركة غير معروفة',
                 location: job.location,
                 description: job.description,
                 postedAt: job.created_at,
@@ -105,7 +82,6 @@ export default function SearchPage() {
         }
 
       } else { // 'company' role
-        // For now, we'll keep filtering mock candidates
         const searchResults = mockCandidates.filter(candidate => 
           (candidate.name.toLowerCase().includes(params.q.toLowerCase()) || 
            candidate.title.toLowerCase().includes(params.q.toLowerCase())) &&
