@@ -20,7 +20,6 @@ import { supabase } from '@/lib/supabaseClient';
 
 import SearchBar from '@/components/search/SearchBar';
 import ResultsList from '@/components/search/ResultsList';
-import { mockCandidates } from '@/lib/mock-data'; // Keep for company search until fully implemented
 
 export type SearchParams = {
   q: string;
@@ -141,16 +140,19 @@ export default function SearchPage() {
     } finally {
         setLoading(false);
     }
-  }, [user]); // Removed 'toast' from dependencies to prevent infinite loop
+  }, [user, toast]); // Correct dependencies
 
   // Initial data load effect
   useEffect(() => {
+    // Only run search if user is loaded
     if (user) {
       performSearch({ q: '', loc: '', type: 'all', remote: false });
     } else {
+      // If user is null (not logged in), clear results.
+      // This prevents showing stale data from a previous session.
       setResults([]);
     }
-  }, [user, performSearch]);
+  }, [user, performSearch]); // Reruns when user logs in/out or performSearch is stable
   
   return (
     <>
