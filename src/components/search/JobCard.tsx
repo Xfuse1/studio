@@ -29,12 +29,19 @@ interface JobCardProps {
 export default function JobCard({ job }: JobCardProps) {
   const logoPlaceholder = PlaceHolderImages.find(p => p.id === job.logo);
 
-  const timeAgo = formatDistanceToNow(new Date(job.postedAt), { addSuffix: true, locale: ar });
+  let timeAgo = 'غير محدد';
+  try {
+    if (job.postedAt) {
+      timeAgo = formatDistanceToNow(new Date(job.postedAt), { addSuffix: true, locale: ar });
+    }
+  } catch (error) {
+    console.error("Invalid date for job.postedAt:", job.postedAt);
+  }
 
   return (
     <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
       <CardHeader className="flex flex-row items-start gap-4">
-        {logoPlaceholder && (
+        {logoPlaceholder ? (
             <Image
                 src={logoPlaceholder.imageUrl}
                 alt={`${job.company} logo`}
@@ -43,6 +50,10 @@ export default function JobCard({ job }: JobCardProps) {
                 className="rounded-lg border"
                 data-ai-hint={logoPlaceholder.imageHint}
             />
+        ) : (
+          <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
+            No Logo
+          </div>
         )}
         <div className="flex-1">
           <CardTitle className="text-xl font-headline">{job.title}</CardTitle>
