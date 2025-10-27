@@ -41,6 +41,7 @@ export default function SearchPage() {
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
     setShowLoginPrompt(false);
+    console.log(`[performSearch] Started for role: ${currentRole}`, { params });
   
     if (!supabase) {
       toast({
@@ -85,27 +86,43 @@ export default function SearchPage() {
         setSearchResults(adaptedJobs);
 
       } else if (currentRole === 'company') {
-         if (!user) {
+        console.log('[performSearch] Company role detected. Preparing to search for candidates.');
+        if (!user) {
           setShowLoginPrompt(true);
           setSearchResults([]);
           setIsLoading(false);
+          console.log('[performSearch] User not logged in as Company. Showing login prompt.');
           return;
         }
 
         let query = supabase.from('seeker_profiles').select('*');
 
+        // Combined search for main query parameter 'q'
         if (params.q) {
-            query = query.or(`full_name.ilike.%${params.q}%,job_title.ilike.%${params.q}%`);
+            const searchQuery = `%${params.q}%`;
+            console.log(`[performSearch] Applying main search filter: ${searchQuery}`);
+            query = query.or(
+              `full_name.ilike.${searchQuery},` +
+              `job_title.ilike.${searchQuery},` +
+              `country.ilike.${searchQuery},` +
+              `email.ilike.${searchQuery}`
+            );
         }
+        // Separate search for location parameter 'loc'
         if (params.loc) {
-            query = query.ilike('country', `%${params.loc}%`);
+            const locQuery = `%${params.loc}%`;
+            console.log(`[performSearch] Applying location filter: ${locQuery}`);
+            query = query.ilike('country', locQuery);
         }
 
+        console.log('[performSearch] Executing Supabase query for candidates...');
         const { data, error } = await query;
 
         if (error) {
+            console.error('[performSearch] Supabase query error:', error);
             throw error;
         }
+        console.log(`[performSearch] Found ${data.length} candidates.`);
 
         const adaptedCandidates = data.map(candidate => ({
             id: candidate.id,
@@ -123,12 +140,13 @@ export default function SearchPage() {
       console.error("Search Error:", err);
       toast({
         title: 'فشل البحث',
-        description: err?.message || 'حدث خطأ أثناء جلب النتائج.',
+        description: err?.message || 'حدث خطأ أثناء جلب النتائج. قد يكون السبب متعلقًا بصلاحيات الوصول إلى البيانات (RLS).',
         variant: "destructive"
       });
       setSearchResults([]);
     } finally {
       setIsLoading(false);
+      console.log('[performSearch] Search finished.');
     }
   }, [user, currentRole, toast]);
 
