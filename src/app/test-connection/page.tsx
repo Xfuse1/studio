@@ -9,9 +9,9 @@ export default function TestConnection() {
         console.error('Supabase client is not initialized. Check your environment variables.');
         return;
       }
-      // This query will fail if the 'profiles' table doesn't exist, which is expected.
+      // This query will now target your actual 'seeker_profiles' table.
       // We are looking for an auth error (bad key) vs. a table-not-found error.
-      const { data, error } = await supabase.from('profiles').select('id').limit(1);
+      const { data, error } = await supabase.from('seeker_profiles').select('id').limit(1);
       console.log('Test Result:', { data, error });
     }
     test()
@@ -22,7 +22,7 @@ export default function TestConnection() {
       <div className="text-center p-8">
           <h1 className="text-2xl font-bold mb-4">Testing Supabase Connection...</h1>
           <p className="text-muted-foreground">Check the browser console (DevTools) for the test result.</p>
-          <p className="text-muted-foreground mt-2">The result will show either data, a 'relation "profiles" does not exist' error (which is a good sign), or an authentication error.</p>
+          <p className="text-muted-foreground mt-2">The result will show either data, an empty array (which is a good sign), or an authentication error.</p>
       </div>
     </div>
     )
