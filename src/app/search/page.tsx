@@ -75,7 +75,7 @@ export default function SearchPage() {
     console.log('🔍 بداية البحث:', { jobTitle, location });
 
     if (!supabase) {
-        toast({ title: "Database client not available.", variant: "destructive" });
+        toast({ title: "Database client not available. Check environment variables.", variant: "destructive" });
         setLoading(false);
         return;
     }
