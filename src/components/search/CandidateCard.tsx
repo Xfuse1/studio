@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 interface CandidateCardProps {
   candidate: {
@@ -27,7 +29,18 @@ interface CandidateCardProps {
 
 export default function CandidateCard({ candidate }: CandidateCardProps) {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const router = useRouter();
     const avatarPlaceholder = PlaceHolderImages.find(p => p.id === candidate.avatar);
+
+    const handleViewProfile = () => {
+      if(!user) {
+        router.push('/signin');
+      } else {
+        // Placeholder for future profile page navigation
+        console.log("Navigate to profile for user:", candidate.id);
+      }
+    }
 
   return (
     <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300">
@@ -51,11 +64,13 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
         <p className="text-muted-foreground mb-4 line-clamp-2">
           {candidate.summary}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-baseline gap-2">
             <span className="font-medium">{t('candidateCard.skills')}</span>
-            {candidate.skills.map((skill) => (
-                <Badge key={skill} variant="secondary" className="rounded-lg">{skill}</Badge>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {candidate.skills.map((skill) => (
+                  <Badge key={skill} variant="secondary" className="rounded-lg">{skill}</Badge>
+              ))}
+            </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -63,7 +78,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
             <MapPin className="w-4 h-4" />
             <span>{candidate.location}</span>
           </div>
-        <Button variant="outline" className="rounded-2xl w-full sm:w-auto">{t('candidateCard.viewProfile')}</Button>
+        <Button variant="outline" className="rounded-2xl w-full sm:w-auto" onClick={handleViewProfile}>{t('candidateCard.viewProfile')}</Button>
       </CardFooter>
     </Card>
   );
