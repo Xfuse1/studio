@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -29,7 +30,6 @@ export default function SearchPage() {
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   
   const [currentRole, setCurrentRole] = useState<UserRole | undefined>(undefined);
 
@@ -44,7 +44,6 @@ export default function SearchPage() {
 
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
-    setShowLoginPrompt(false);
     console.log(`[performSearch] Started for role: ${currentRole}`, { params });
   
     if (!supabase) {
@@ -91,14 +90,7 @@ export default function SearchPage() {
 
       } else if (currentRole === 'company') {
         console.log('[performSearch] Company role detected. Preparing to search for candidates.');
-        if (!user) {
-          setShowLoginPrompt(true);
-          setSearchResults([]);
-          setIsLoading(false);
-          console.log('[performSearch] User not logged in as Company. Showing login prompt.');
-          return;
-        }
-
+        
         let query = supabase.from('seeker_profiles').select('*');
 
         // Combined search for main query parameter 'q'
@@ -133,7 +125,7 @@ export default function SearchPage() {
             name: candidate.full_name,
             title: candidate.job_title,
             location: candidate.country,
-            skills: candidate.skills || [],
+            skills: candidate.skills ? (candidate.skills as string).split(',').map(s => s.trim()) : [],
             summary: candidate.bio,
             avatar: candidate.avatar_url || 'candidate-avatar-1', // Fallback to placeholder
         }));
@@ -166,7 +158,7 @@ export default function SearchPage() {
   }, [searchParams, performSearch]);
 
   const handleSearch = (params: SearchParams) => {
-    if (!user) {
+    if (!user && currentRole === 'company') {
       toast({
         title: "مطلوب تسجيل الدخول",
         description: "يجب تسجيل الدخول للوصول إلى خيارات البحث المتقدمة",
@@ -201,16 +193,6 @@ export default function SearchPage() {
         <SearchBar onSearch={handleSearch} isLoading={isLoading} />
       </div>
 
-      {showLoginPrompt && (
-         <Alert variant="default" className="max-w-2xl mx-auto rounded-2xl">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
-          <AlertDescription>
-            {t('search.loginRequiredDescription')}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {isLoading ? (
         <div className="space-y-6">
           {[...Array(3)].map((_, i) => (
@@ -231,13 +213,14 @@ export default function SearchPage() {
       ) : searchResults.length > 0 ? (
         <ResultsList results={searchResults} role={currentRole} />
       ) : (
-        !showLoginPrompt && (
+        
             <div className="text-center py-16">
                 <h2 className="text-2xl font-semibold mb-2">{t('search.noResultsTitle')}</h2>
                 <p className="text-muted-foreground">{t('search.noResultsDescription')}</p>
             </div>
-        )
+        
       )}
     </div>
   );
 }
+
