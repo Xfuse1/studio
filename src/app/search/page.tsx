@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,29 +21,24 @@ type SeekerProfile = {
   avatar_url: string; // Assuming an avatar_url column exists
 };
 
-function SearchComponent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { user } = useAuth();
+export default function SearchPage() {
   const { toast } = useToast();
-
   const [results, setResults] = useState<SeekerProfile[]>([]);
-  const [loading, setLoading] = useState(true); // Start loading initially
-  const [searchAttempted, setSearchAttempted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useState({
+    jobTitle: '',
+    location: ''
+  });
 
-  // Get search params from URL
-  const q = searchParams.get('q') || '';
-  const loc = searchParams.get('loc') || '';
+  const searchSeekers = useCallback(async (jobTitle: string, location: string) => {
+    setLoading(true);
+    console.log('🔍 بداية البحث:', { jobTitle, location });
 
-  const handleSearch = useCallback(async (jobTitle: string, location: string) => {
     if (!supabase) {
         toast({ title: "Database client not available.", variant: "destructive" });
         setLoading(false);
         return;
     }
-
-    setLoading(true);
-    setSearchAttempted(true); // Mark that a search is being attempted
     
     let query = supabase
       .from('seeker_profiles')
@@ -59,50 +52,49 @@ function SearchComponent() {
     }
 
     try {
-        const { data, error } = await query.limit(20); // Limit results for performance
+        const { data, error } = await query.limit(20);
+        console.log('📊 نتيجة البحث:', { data, error });
         
         if (error) throw error;
         
         if (data) {
           setResults(data as SeekerProfile[]);
+        } else {
+          setResults([]);
         }
     } catch (err: any) {
-        console.error('Search error:', err);
+        console.error('خطأ في البحث:', err);
         toast({
             title: 'فشل البحث',
             description: err?.message ?? 'حدث خطأ أثناء جلب النتائج.',
             variant: "destructive"
         });
-        setResults([]); // Clear results on error
+        setResults([]);
     } finally {
         setLoading(false);
     }
   }, [toast]);
   
-  // Effect to trigger search when component mounts or URL params change
   useEffect(() => {
-    // Only set searchAttempted if there are search terms in the URL on load
-    if (q || loc) {
-      setSearchAttempted(true);
-    }
-    handleSearch(q, loc);
-  }, [q, loc, handleSearch]);
+    searchSeekers('', '');
+  }, [searchSeekers]);
+  
+  const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newJobTitle = e.target.value;
+      setSearchParams(prev => ({...prev, jobTitle: newJobTitle}));
+      searchSeekers(newJobTitle, searchParams.location);
+  }
 
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newLocation = e.target.value;
+      setSearchParams(prev => ({...prev, location: newLocation}));
+      searchSeekers(searchParams.jobTitle, newLocation);
+  }
 
-  const handleUrlUpdate = (newParams: { q: string; loc: string }) => {
-    const urlParams = new URLSearchParams(searchParams);
-    if (newParams.q) {
-        urlParams.set('q', newParams.q);
-    } else {
-        urlParams.delete('q');
-    }
-    if (newParams.loc) {
-        urlParams.set('loc', newParams.loc);
-    } else {
-        urlParams.delete('loc');
-    }
-    router.push(`/search?${urlParams.toString()}`);
-  };
+  const handleFormSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      searchSeekers(searchParams.jobTitle, searchParams.location);
+  }
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-8">
@@ -110,18 +102,13 @@ function SearchComponent() {
         <section className="mb-12 animate-fade-in-up">
            <Card className="rounded-2xl shadow-lg overflow-hidden">
              <CardContent className="p-6">
-                <form onSubmit={(e) => {
-                    e.preventDefault();
-                    handleUrlUpdate({ 
-                        q: (document.getElementById('q') as HTMLInputElement).value, 
-                        loc: (document.getElementById('loc') as HTMLInputElement).value 
-                    });
-                }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+                <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                     <div className="lg:col-span-2 grid gap-2">
                         <Label htmlFor="q">المسمى الوظيفي أو الكلمة الرئيسية</Label>
                         <Input
                             id="q"
-                            defaultValue={q}
+                            value={searchParams.jobTitle}
+                            onChange={handleJobTitleChange}
                             placeholder="مثال: مطور ويب"
                         />
                     </div>
@@ -129,7 +116,8 @@ function SearchComponent() {
                         <Label htmlFor="loc">الموقع</Label>
                         <Input
                             id="loc"
-                            defaultValue={loc}
+                            value={searchParams.location}
+                            onChange={handleLocationChange}
                             placeholder="مثال: مصر"
                         />
                     </div>
@@ -192,35 +180,15 @@ function SearchComponent() {
                 ))}
               </div>
             </>
-          ) : searchAttempted ? (
+          ) : (
             <div className="text-center py-16 bg-card rounded-2xl shadow-sm">
               <p className="text-lg text-muted-foreground">
                 لم يتم العثور على نتائج. حاول بكلمات بحث مختلفة.
-              </p>
-            </div>
-          ) : (
-             <div className="text-center py-16 bg-card rounded-2xl shadow-sm">
-              <p className="text-lg text-muted-foreground">
-                ابدأ البحث للعثور على المرشحين
               </p>
             </div>
           )}
         </section>
       </div>
     </div>
-  );
-}
-
-export default function SearchPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center h-screen">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-      }
-    >
-      <SearchComponent />
-    </Suspense>
   );
 }
