@@ -82,6 +82,14 @@ export default function SearchPage() {
       return;
     }
   
+    // Explicitly prevent search for logged-out company users
+    if (currentRole === 'company' && !user) {
+      setShowLoginPrompt(true);
+      setSearchResults([]);
+      setIsLoading(false);
+      return;
+    }
+  
     try {
       if (currentRole === 'seeker') {
         let query = supabase
