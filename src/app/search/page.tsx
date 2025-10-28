@@ -131,11 +131,8 @@ export default function SearchPage() {
             phone, 
             profile_image_url, 
             nationality,
-            user_skills (
-              level,
-              skills (
-                name
-              )
+            skills (
+              name
             )
           `);
 
@@ -156,20 +153,14 @@ export default function SearchPage() {
         }
         
         const adaptedCandidates = data?.map(candidate => {
-          const skills = candidate.user_skills?.map((userSkill: any) => ({
-            name: userSkill.skills?.name,
-            level: userSkill.level
-          })).filter((skill: any) => skill.name) || [];
-
-          const skillNames = skills.map((skill: any) => skill.name);
+          const skills = candidate.skills?.map((skill: any) => skill.name) || [];
 
           return {
             id: candidate.id,
             name: candidate.full_name,
             title: candidate.job_title,
             location: candidate.country,
-            skills: skillNames,
-            skillsWithLevel: skills,
+            skills: skills,
             summary: candidate.job_title,
             avatar: candidate.profile_image_url || 'candidate-avatar-1',
             email: candidate.email,
@@ -224,7 +215,7 @@ export default function SearchPage() {
               <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">
                 {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
               </h1>
-              <p className="text-foreground text-lg">
+              <p className="text-foreground text-xl">
                 {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
               </p>
               <div className="mt-8 hidden md:block">

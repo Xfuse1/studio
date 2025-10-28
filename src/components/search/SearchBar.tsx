@@ -64,7 +64,7 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               className="rounded-full h-14 px-6 text-lg"
             />
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <Label htmlFor="type" className="whitespace-nowrap font-semibold text-foreground">{t('search.employmentType')}</Label>
               <Select value={type} onValueChange={setType}>
@@ -81,7 +81,7 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
             </div>
             <div className="flex items-center gap-2" dir="ltr">
                <Switch id="remote-only" checked={remote} onCheckedChange={setRemote} />
-               <Label htmlFor="remote-only" className="font-medium cursor-pointer">{t('search.remoteOnly')}</Label>
+               <Label htmlFor="remote-only" className="font-semibold cursor-pointer">{t('search.remoteOnly')}</Label>
             </div>
           </div>
           <Button type="submit" className="w-full rounded-full h-14 text-xl font-bold" disabled={isLoading}>
@@ -99,4 +99,3 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
     </Card>
   );
 }
-
