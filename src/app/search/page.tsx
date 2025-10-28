@@ -224,7 +224,7 @@ export default function SearchPage() {
               <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">
                 {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-foreground text-lg">
                 {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
               </p>
               <div className="mt-8 hidden md:block">
