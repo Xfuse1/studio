@@ -4,7 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SearchBar from '@/components/search/SearchBar';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Terminal, LogIn } from 'lucide-react';
 import type { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
@@ -70,7 +79,6 @@ export default function SearchPage() {
 
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
-    setShowLoginPrompt(false);
   
     if (!supabase) {
       toast({
@@ -245,25 +253,28 @@ export default function SearchPage() {
       </div>
 
 
-      {showLoginPrompt && (
-         <Alert variant="default" className="max-w-2xl mx-auto rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className='flex items-center'>
-            <Terminal className="h-4 w-4" />
-            <div className='ms-4'>
-              <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
-              <AlertDescription>
-                {t('search.loginRequiredDescription')}
-              </AlertDescription>
-            </div>
-          </div>
-          <Button asChild className="rounded-2xl w-full sm:w-auto">
-            <Link href="/signin">
-              <LogIn className="ms-2" />
-              {t('header.signIn')}
-            </Link>
-          </Button>
-        </Alert>
-      )}
+      <AlertDialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
+        <AlertDialogContent className="rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+               <Terminal className="h-5 w-5" />
+               {t('search.loginRequiredTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('search.loginRequiredDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-2xl">{t('signIn.cancel') || 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction asChild className="rounded-2xl">
+              <Link href="/signin">
+                <LogIn className="ms-2" />
+                {t('header.signIn')}
+              </Link>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {isLoading ? (
         <ResultsSkeleton />

@@ -5,7 +5,8 @@
     "signOut": "Sign Out"
   },
   "splash": {
-    "welcome": "Welcome to the Hiring Portal"
+    "welcome": "Welcome to the Hiring Portal",
+    "prompt": "Your gateway to promising career opportunities. Opening search page..."
   },
   "search": {
     "findYourDreamJob": "Find Your Dream Job",
@@ -56,6 +57,7 @@
     "signUp": "Sign Up",
     "noAccount": "Don't have an account? Sign up",
     "hasAccount": "Already have an account? Sign in",
-    "authFailed": "Authentication failed"
+    "authFailed": "Authentication failed",
+    "cancel": "Cancel"
   }
 }
