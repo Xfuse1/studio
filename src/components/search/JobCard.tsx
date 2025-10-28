@@ -42,7 +42,7 @@ export default function JobCard({ job }: JobCardProps) {
   }
 
   return (
-    <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <Card className="w-full rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 bg-white">
       <CardHeader className="flex flex-row items-start gap-4">
         {logoPlaceholder ? (
             <div className="relative w-16 h-16">
@@ -50,12 +50,12 @@ export default function JobCard({ job }: JobCardProps) {
                   src={logoPlaceholder.imageUrl}
                   alt={`${job.company} logo`}
                   fill
-                  className="rounded-lg border object-cover"
+                  className="rounded-xl border object-cover"
                   data-ai-hint={logoPlaceholder.imageHint}
               />
             </div>
         ) : (
-          <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
+          <div className="w-16 h-16 bg-muted rounded-xl flex items-center justify-center text-muted-foreground text-xs">
             No Logo
           </div>
         )}
@@ -80,7 +80,9 @@ export default function JobCard({ job }: JobCardProps) {
             <span>{timeAgo}</span>
           </div>
         </div>
-        <Button className="rounded-2xl w-full sm:w-auto">{t('jobCard.applyNow')}</Button>
+        <Button className="rounded-full w-full sm:w-auto font-bold px-6 py-3">
+            {t('jobCard.applyNow')}
+        </Button>
       </CardFooter>
     </Card>
   );

@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import Illustration from '@/components/search/Illustration';
 
 const ResultsList = dynamic(() => import('@/components/search/ResultsList'), {
   loading: () => <ResultsSkeleton />,
@@ -25,9 +26,9 @@ export interface SearchParams {
 }
 
 const ResultsSkeleton = () => (
-  <div className="space-y-6">
-    {[...Array(3)].map((_, i) => (
-       <div key={i} className="bg-card p-6 rounded-2xl shadow-md w-full">
+  <div className="grid md:grid-cols-2 gap-8">
+    {[...Array(4)].map((_, i) => (
+       <div key={i} className="bg-card p-6 rounded-3xl shadow-md w-full">
           <div className="flex gap-4">
             <Skeleton className="w-16 h-16 rounded-lg" />
             <div className="flex-1 space-y-3">
@@ -218,13 +219,18 @@ export default function SearchPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold font-headline text-center mb-2">
-          {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
-        </h1>
-        <p className="text-muted-foreground text-center text-lg">
-          {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
-        </p>
+       <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
+         <div className="text-center md:text-right">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">
+              {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
+            </p>
+         </div>
+         <div className="hidden md:block">
+            <Illustration />
+         </div>
       </div>
 
       <div className="sticky top-[65px] z-30 bg-background/80 backdrop-blur-sm -mx-4 sm:mx-0 px-4 sm:px-0 py-4 mb-8">
@@ -232,7 +238,7 @@ export default function SearchPage() {
       </div>
 
       {showLoginPrompt && (
-         <Alert variant="default" className="max-w-2xl mx-auto rounded-2xl">
+         <Alert variant="default" className="max-w-2xl mx-auto rounded-3xl">
           <Terminal className="h-4 w-4" />
           <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
           <AlertDescription>

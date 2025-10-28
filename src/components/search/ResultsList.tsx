@@ -9,7 +9,7 @@ interface ResultsListProps {
 
 export default function ResultsList({ results, role }: ResultsListProps) {
   return (
-    <div className="grid gap-6">
+    <div className="grid md:grid-cols-2 gap-8">
       {results.map((item, index) => (
         <div 
           key={item.id} 

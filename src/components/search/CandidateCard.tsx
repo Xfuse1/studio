@@ -49,7 +49,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
     }
 
   return (
-    <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <Card className="w-full rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 bg-white">
       <CardHeader className="flex flex-row items-start gap-4">
         {avatarPlaceholder && (
             <Image
@@ -76,7 +76,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
             <div className="flex flex-wrap gap-2">
               {displaySkills && displaySkills.length > 0 ? (
                 displaySkills.map((skill, index) => (
-                  <Badge key={skill || index} variant="secondary" className="rounded-lg">
+                  <Badge key={skill || index} variant="secondary" className="rounded-full px-3 py-1 text-sm">
                     {skill}
                   </Badge>
                 ))
@@ -106,7 +106,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
             <MapPin className="w-4 h-4" />
             <span>{candidate.location}</span>
           </div>
-        <Button variant="outline" className="rounded-2xl w-full sm:w-auto" onClick={handleViewProfile}>
+        <Button variant="outline" className="rounded-full font-bold px-6 py-3 border-primary text-primary hover:bg-primary/10 hover:text-primary" onClick={handleViewProfile}>
           {t('candidateCard.viewProfile')}
         </Button>
       </CardFooter>

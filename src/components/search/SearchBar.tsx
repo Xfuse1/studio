@@ -45,31 +45,31 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   };
 
   return (
-    <Card className="rounded-2xl shadow-lg overflow-hidden">
-      <CardContent className="p-6">
+    <Card className="rounded-3xl shadow-lg overflow-hidden border-0">
+      <CardContent className="p-4">
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-            <div className="lg:col-span-2 grid gap-2">
-              <Label htmlFor="q">{t('search.jobTitleOrKeyword')}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
+            <div className="lg:col-span-2">
               <Input
                 id="q"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={t('search.jobTitlePlaceholder')}
+                className="rounded-full h-12 px-6 bg-white"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="loc">{t('search.location')}</Label>
+            <div className="lg:col-span-2">
               <Input
                 id="loc"
                 value={loc}
                 onChange={(e) => setLoc(e.target.value)}
                 placeholder={t('search.locationPlaceholder')}
+                className="rounded-full h-12 px-6 bg-white"
               />
             </div>
-            <Button type="submit" className="w-full rounded-2xl h-10" disabled={isLoading}>
+            <Button type="submit" className="w-full rounded-full h-12 text-lg font-bold" disabled={isLoading}>
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
                 <>
                   <Search className="h-5 w-5 ms-2" />
@@ -78,11 +78,11 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               )}
             </Button>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-4 md:gap-6">
+          <div className="mt-4 flex flex-wrap items-center gap-4 md:gap-6 px-2">
             <div className="flex items-center gap-2">
-              <Label htmlFor="type" className="whitespace-nowrap">{t('search.employmentType')}</Label>
+              <Label htmlFor="type" className="whitespace-nowrap font-medium">{t('search.employmentType')}</Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="type" className="w-[150px] rounded-2xl">
+                <SelectTrigger id="type" className="w-auto rounded-full border-0 bg-white font-medium">
                   <SelectValue placeholder={t('search.all')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -94,8 +94,8 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               </Select>
             </div>
             <div className="flex items-center gap-2" dir="ltr">
+              <Label htmlFor="remote-only" className="font-medium cursor-pointer">{t('search.remoteOnly')}</Label>
               <Switch id="remote-only" checked={remote} onCheckedChange={setRemote} />
-              <Label htmlFor="remote-only">{t('search.remoteOnly')}</Label>
             </div>
           </div>
         </form>
