@@ -66,7 +66,7 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-2">
-              <Label htmlFor="type" className="whitespace-nowrap font-medium">{t('search.employmentType')}</Label>
+              <Label htmlFor="type" className="whitespace-nowrap font-medium text-foreground">{t('search.employmentType')}</Label>
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger id="type" className="w-auto rounded-full border-2 bg-white font-medium">
                   <SelectValue placeholder={t('search.all')} />
