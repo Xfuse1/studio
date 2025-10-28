@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -30,6 +29,7 @@ export default function SearchPage() {
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   
   const [currentRole, setCurrentRole] = useState<UserRole | undefined>(undefined);
 
@@ -44,6 +44,7 @@ export default function SearchPage() {
 
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
+    setShowLoginPrompt(false);
     console.log(`[performSearch] Started for role: ${currentRole}`, { params });
   
     if (!supabase) {
@@ -73,6 +74,11 @@ export default function SearchPage() {
         const { data, error } = await query;
   
         if (error) {
+          console.error('[performSearch] Jobs query error:', {
+            message: error.message,
+            code: error.code,
+            details: error.details
+          });
           throw error;
         }
   
@@ -90,45 +96,88 @@ export default function SearchPage() {
 
       } else if (currentRole === 'company') {
         console.log('[performSearch] Company role detected. Preparing to search for candidates.');
-        
-        let query = supabase.from('seeker_profiles').select('*, skills(name)');
+        if (!user) {
+          setShowLoginPrompt(true);
+          setSearchResults([]);
+          setIsLoading(false);
+          console.log('[performSearch] User not logged in as Company. Showing login prompt.');
+          return;
+        }
 
-        // Combined search for main query parameter 'q'
+        // ✅ استعلام محسن مع استيراد المهارات
+        let query = supabase
+          .from('seeker_profiles')
+          .select(`
+            id, 
+            full_name, 
+            email, 
+            job_title, 
+            country, 
+            phone, 
+            profile_image_url, 
+            nationality,
+            user_skills (
+              level,
+              skills (
+                name
+              )
+            )
+          `);
+
+        // البحث في المحتوى الرئيسي
         if (params.q) {
-            const searchQuery = `%${params.q}%`;
-            console.log(`[performSearch] Applying main search filter: ${searchQuery}`);
-            query = query.or(
-              `full_name.ilike.${searchQuery},` +
-              `job_title.ilike.${searchQuery},` +
-              `country.ilike.${searchQuery},` +
-              `email.ilike.${searchQuery}`
-            );
+          const searchQuery = `%${params.q}%`;
+          console.log(`[performSearch] Applying main search filter: ${searchQuery}`);
+          query = query.or(`full_name.ilike.${searchQuery},job_title.ilike.${searchQuery},email.ilike.${searchQuery}`);
         }
-        // Separate search for location parameter 'loc'
+        
+        // البحث في الموقع
         if (params.loc) {
-            const locQuery = `%${params.loc}%`;
-            console.log(`[performSearch] Applying location filter: ${locQuery}`);
-            query = query.ilike('country', locQuery);
+          const locQuery = `%${params.loc}%`;
+          console.log(`[performSearch] Applying location filter: ${locQuery}`);
+          query = query.ilike('country', locQuery);
         }
 
-        console.log('[performSearch] Executing Supabase query for candidates...');
+        console.log('[performSearch] Executing Supabase query for candidates with skills...');
         const { data, error } = await query;
 
         if (error) {
-            console.error('[performSearch] Supabase query error:', error);
-            throw error;
+          console.error('[performSearch] Supabase query error:', {
+            message: error.message,
+            code: error.code,
+            details: error.details
+          });
+          throw error;
         }
-        console.log(`[performSearch] Found ${data.length} candidates.`);
+        
+        console.log(`[performSearch] Found ${data?.length || 0} candidates.`);
+        console.log('[performSearch] Candidate data with skills:', data);
 
-        const adaptedCandidates = data.map(candidate => ({
+        // تحويل البيانات مع المهارات
+        const adaptedCandidates = data?.map(candidate => {
+          // استخراج المهارات من العلاقة
+          const skills = candidate.user_skills?.map((userSkill: any) => ({
+            name: userSkill.skills?.name,
+            level: userSkill.level
+          })).filter((skill: any) => skill.name) || []; // تصفية المهارات الفارغة
+
+          // استخراج أسماء المهارات فقط للعرض
+          const skillNames = skills.map((skill: any) => skill.name);
+
+          return {
             id: candidate.id,
             name: candidate.full_name,
             title: candidate.job_title,
             location: candidate.country,
-            skills: Array.isArray(candidate.skills) ? candidate.skills.map((s: any) => s.name) : [],
-            summary: candidate.bio,
-            avatar: candidate.avatar_url || 'candidate-avatar-1', // Fallback to placeholder
-        }));
+            skills: skillNames, // ✅ الآن تحتوي على المهارات الفعلية
+            skillsWithLevel: skills, // احتفظ بالبيانات الكاملة إذا احتجتها
+            summary: candidate.job_title,
+            avatar: candidate.profile_image_url || 'candidate-avatar-1',
+            email: candidate.email,
+            phone: candidate.phone,
+            nationality: candidate.nationality
+          };
+        }) || [];
         
         setSearchResults(adaptedCandidates);
       }
@@ -154,20 +203,14 @@ export default function SearchPage() {
       type: searchParams.get('type') || 'all',
       remote: searchParams.get('remote') === 'true',
     };
-    performSearch(params);
-  }, [searchParams, performSearch]);
+    
+    // تأكد أن currentRole محدد قبل البحث
+    if (currentRole) {
+      performSearch(params);
+    }
+  }, [searchParams, performSearch, currentRole]);
 
   const handleSearch = (params: SearchParams) => {
-    if (!user && currentRole === 'company') {
-      toast({
-        title: "مطلوب تسجيل الدخول",
-        description: "يجب تسجيل الدخول للوصول إلى خيارات البحث المتقدمة",
-        action: (
-          <Button onClick={() => router.push('/signin')}>تسجيل الدخول</Button>
-        ),
-      });
-      return;
-    }
     const url = new URL(window.location.toString());
     url.searchParams.set('q', params.q);
     url.searchParams.set('loc', params.loc);
@@ -193,6 +236,16 @@ export default function SearchPage() {
         <SearchBar onSearch={handleSearch} isLoading={isLoading} />
       </div>
 
+      {showLoginPrompt && (
+         <Alert variant="default" className="max-w-2xl mx-auto rounded-2xl">
+          <Terminal className="h-4 w-4" />
+          <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
+          <AlertDescription>
+            {t('search.loginRequiredDescription')}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {isLoading ? (
         <div className="space-y-6">
           {[...Array(3)].map((_, i) => (
@@ -213,14 +266,13 @@ export default function SearchPage() {
       ) : searchResults.length > 0 ? (
         <ResultsList results={searchResults} role={currentRole} />
       ) : (
-        
+        !showLoginPrompt && (
             <div className="text-center py-16">
                 <h2 className="text-2xl font-semibold mb-2">{t('search.noResultsTitle')}</h2>
                 <p className="text-muted-foreground">{t('search.noResultsDescription')}</p>
             </div>
-        
+        )
       )}
     </div>
   );
 }
-

@@ -45,14 +45,15 @@ export default function JobCard({ job }: JobCardProps) {
     <Card className="w-full rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       <CardHeader className="flex flex-row items-start gap-4">
         {logoPlaceholder ? (
-            <Image
-                src={logoPlaceholder.imageUrl}
-                alt={`${job.company} logo`}
-                width={64}
-                height={64}
-                className="rounded-lg border"
-                data-ai-hint={logoPlaceholder.imageHint}
-            />
+            <div className="relative w-16 h-16">
+              <Image
+                  src={logoPlaceholder.imageUrl}
+                  alt={`${job.company} logo`}
+                  fill
+                  className="rounded-lg border object-cover"
+                  data-ai-hint={logoPlaceholder.imageHint}
+              />
+            </div>
         ) : (
           <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-xs">
             No Logo
@@ -64,7 +65,7 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground line-clamp-2">
+        <p className="text-muted-foreground line-clamp-2 text-sm">
           {job.description}
         </p>
       </CardContent>

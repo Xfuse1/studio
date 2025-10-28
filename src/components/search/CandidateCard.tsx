@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, Mail, Phone } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +24,10 @@ interface CandidateCardProps {
     skills: string[];
     summary: string;
     avatar: string;
+    email?: string;
+    phone?: string;
+    nationality?: string;
+    skillsWithLevel?: any[];
   };
 }
 
@@ -33,11 +37,13 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
     const router = useRouter();
     const avatarPlaceholder = PlaceHolderImages.find(p => p.id === candidate.avatar);
 
+    const displaySkills = candidate.skills || 
+                         (candidate.skillsWithLevel?.map((s: any) => s.name) || []);
+
     const handleViewProfile = () => {
       if(!user) {
         router.push('/signin');
       } else {
-        // Placeholder for future profile page navigation
         console.log("Navigate to profile for user:", candidate.id);
       }
     }
@@ -60,17 +66,39 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
           <CardDescription className="text-md text-primary">{candidate.title}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground mb-4 line-clamp-2">
+      <CardContent className="grid gap-4">
+        <p className="text-muted-foreground text-sm line-clamp-2">
           {candidate.summary}
         </p>
-        <div className="flex items-baseline gap-2">
-            <span className="font-medium">{t('candidateCard.skills')}</span>
+        
+        <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">{t('candidateCard.skills')}</h3>
             <div className="flex flex-wrap gap-2">
-              {candidate.skills.map((skill) => (
-                  <Badge key={skill} variant="secondary" className="rounded-lg">{skill}</Badge>
-              ))}
+              {displaySkills && displaySkills.length > 0 ? (
+                displaySkills.map((skill, index) => (
+                  <Badge key={skill || index} variant="secondary" className="rounded-lg">
+                    {skill}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-sm text-muted-foreground">لا توجد مهارات</span>
+              )}
             </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 text-sm text-muted-foreground">
+            {candidate.email && 
+                <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    <span>{candidate.email}</span>
+                </div>
+            }
+            {candidate.phone && 
+                <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    <span>{candidate.phone}</span>
+                </div>
+            }
         </div>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -78,7 +106,9 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
             <MapPin className="w-4 h-4" />
             <span>{candidate.location}</span>
           </div>
-        <Button variant="outline" className="rounded-2xl w-full sm:w-auto" onClick={handleViewProfile}>{t('candidateCard.viewProfile')}</Button>
+        <Button variant="outline" className="rounded-2xl w-full sm:w-auto" onClick={handleViewProfile}>
+          {t('candidateCard.viewProfile')}
+        </Button>
       </CardFooter>
     </Card>
   );
