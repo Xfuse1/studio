@@ -67,16 +67,16 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
         </div>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <p className="text-muted-foreground text-sm line-clamp-2">
+        <p className="text-foreground text-base line-clamp-2">
           {candidate.summary}
         </p>
         
         <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold">{t('candidateCard.skills')}</h3>
+            <h3 className="text-base font-semibold">{t('candidateCard.skills')}</h3>
             <div className="flex flex-wrap gap-2">
               {displaySkills && displaySkills.length > 0 ? (
                 displaySkills.map((skill, index) => (
-                  <Badge key={skill || index} variant="secondary" className="rounded-full px-3 py-1 text-sm">
+                  <Badge key={skill || index} variant="secondary" className="rounded-full px-3 py-1 text-base">
                     {skill}
                   </Badge>
                 ))
@@ -102,7 +102,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-         <div className="flex items-center gap-1 text-sm text-muted-foreground">
+         <div className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
             <MapPin className="w-4 h-4" />
             <span>{candidate.location}</span>
           </div>

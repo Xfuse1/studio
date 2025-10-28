@@ -65,12 +65,12 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground line-clamp-2 text-sm">
+        <p className="text-foreground text-base line-clamp-2">
           {job.description}
         </p>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium text-muted-foreground">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4" />
             <span>{job.location}</span>

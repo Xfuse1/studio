@@ -245,8 +245,8 @@ export default function SearchPage() {
       ) : (
         !showLoginPrompt && (
             <div className="text-center py-16">
-                <h2 className="text-2xl font-semibold mb-2">{t('search.noResultsTitle')}</h2>
-                <p className="text-muted-foreground">{t('search.noResultsDescription')}</p>
+                <h2 className="text-2xl font-bold mb-2">{t('search.noResultsTitle')}</h2>
+                <p className="text-foreground">{t('search.noResultsDescription')}</p>
             </div>
         )
       )}
