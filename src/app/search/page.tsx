@@ -220,22 +220,22 @@ export default function SearchPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
        <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
-         <div className="text-center md:text-right">
-            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">
-              {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
-            </p>
-         </div>
-         <div className="hidden md:block">
-            <Illustration />
-         </div>
+          <div className="md:order-last text-center md:text-right">
+              <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">
+                {currentRole === 'company' ? t('search.findTopTalent') : t('search.findYourDreamJob')}
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                {currentRole === 'company' ? t('search.thousandsOfCandidates') : t('search.yourGateway')}
+              </p>
+              <div className="mt-8 hidden md:block">
+                  <Illustration />
+              </div>
+          </div>
+          <div className="md:order-first">
+            <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+          </div>
       </div>
 
-      <div className="sticky top-[65px] z-30 bg-background/80 backdrop-blur-sm -mx-4 sm:mx-0 px-4 sm:px-0 py-4 mb-8">
-        <SearchBar onSearch={handleSearch} isLoading={isLoading} />
-      </div>
 
       {showLoginPrompt && (
          <Alert variant="default" className="max-w-2xl mx-auto rounded-3xl">

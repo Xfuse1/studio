@@ -45,44 +45,30 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
   };
 
   return (
-    <Card className="rounded-3xl shadow-lg overflow-hidden border-0">
-      <CardContent className="p-4">
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
-            <div className="lg:col-span-2">
-              <Input
-                id="q"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={t('search.jobTitlePlaceholder')}
-                className="rounded-full h-12 px-6 bg-white"
-              />
-            </div>
-            <div className="lg:col-span-2">
-              <Input
-                id="loc"
-                value={loc}
-                onChange={(e) => setLoc(e.target.value)}
-                placeholder={t('search.locationPlaceholder')}
-                className="rounded-full h-12 px-6 bg-white"
-              />
-            </div>
-            <Button type="submit" className="w-full rounded-full h-12 text-lg font-bold" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                <>
-                  <Search className="h-5 w-5 ms-2" />
-                  <span>{t('search.search')}</span>
-                </>
-              )}
-            </Button>
+    <Card className="rounded-3xl shadow-lg overflow-hidden border-0 bg-white/50 backdrop-blur-sm">
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 gap-4">
+            <Input
+              id="q"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t('search.jobTitlePlaceholder')}
+              className="rounded-full h-14 px-6 text-lg"
+            />
+            <Input
+              id="loc"
+              value={loc}
+              onChange={(e) => setLoc(e.target.value)}
+              placeholder={t('search.locationPlaceholder')}
+              className="rounded-full h-14 px-6 text-lg"
+            />
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-4 md:gap-6 px-2">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-2">
               <Label htmlFor="type" className="whitespace-nowrap font-medium">{t('search.employmentType')}</Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="type" className="w-auto rounded-full border-0 bg-white font-medium">
+                <SelectTrigger id="type" className="w-auto rounded-full border-2 bg-white font-medium">
                   <SelectValue placeholder={t('search.all')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -98,6 +84,16 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
               <Switch id="remote-only" checked={remote} onCheckedChange={setRemote} />
             </div>
           </div>
+          <Button type="submit" className="w-full rounded-full h-14 text-xl font-bold" disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <>
+                <Search className="h-6 w-6 ms-2" />
+                <span>{t('search.search')}</span>
+              </>
+            )}
+          </Button>
         </form>
       </CardContent>
     </Card>
