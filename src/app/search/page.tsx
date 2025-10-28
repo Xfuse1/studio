@@ -4,14 +4,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SearchBar from '@/components/search/SearchBar';
-import ResultsList from '@/components/search/ResultsList';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
 import type { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const ResultsList = dynamic(() => import('@/components/search/ResultsList'), {
+  loading: () => <ResultsSkeleton />,
+});
 
 export interface SearchParams {
   q: string;
@@ -19,6 +23,25 @@ export interface SearchParams {
   type: string;
   remote: boolean;
 }
+
+const ResultsSkeleton = () => (
+  <div className="space-y-6">
+    {[...Array(3)].map((_, i) => (
+       <div key={i} className="bg-card p-6 rounded-2xl shadow-md w-full">
+          <div className="flex gap-4">
+            <Skeleton className="w-16 h-16 rounded-lg" />
+            <div className="flex-1 space-y-3">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </div>
+          <Skeleton className="h-4 w-full mt-4" />
+          <Skeleton className="h-4 w-5/6 mt-2" />
+        </div>
+    ))}
+  </div>
+);
+
 
 export default function SearchPage() {
   const { user } = useAuth();
@@ -45,7 +68,6 @@ export default function SearchPage() {
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
     setShowLoginPrompt(false);
-    console.log(`[performSearch] Started for role: ${currentRole}`, { params });
   
     if (!supabase) {
       toast({
@@ -74,11 +96,6 @@ export default function SearchPage() {
         const { data, error } = await query;
   
         if (error) {
-          console.error('[performSearch] Jobs query error:', {
-            message: error.message,
-            code: error.code,
-            details: error.details
-          });
           throw error;
         }
   
@@ -95,16 +112,13 @@ export default function SearchPage() {
         setSearchResults(adaptedJobs);
 
       } else if (currentRole === 'company') {
-        console.log('[performSearch] Company role detected. Preparing to search for candidates.');
         if (!user) {
           setShowLoginPrompt(true);
           setSearchResults([]);
           setIsLoading(false);
-          console.log('[performSearch] User not logged in as Company. Showing login prompt.');
           return;
         }
 
-        // ✅ استعلام محسن مع استيراد المهارات
         let query = supabase
           .from('seeker_profiles')
           .select(`
@@ -124,44 +138,28 @@ export default function SearchPage() {
             )
           `);
 
-        // البحث في المحتوى الرئيسي
         if (params.q) {
           const searchQuery = `%${params.q}%`;
-          console.log(`[performSearch] Applying main search filter: ${searchQuery}`);
           query = query.or(`full_name.ilike.${searchQuery},job_title.ilike.${searchQuery},email.ilike.${searchQuery}`);
         }
         
-        // البحث في الموقع
         if (params.loc) {
           const locQuery = `%${params.loc}%`;
-          console.log(`[performSearch] Applying location filter: ${locQuery}`);
           query = query.ilike('country', locQuery);
         }
 
-        console.log('[performSearch] Executing Supabase query for candidates with skills...');
         const { data, error } = await query;
 
         if (error) {
-          console.error('[performSearch] Supabase query error:', {
-            message: error.message,
-            code: error.code,
-            details: error.details
-          });
           throw error;
         }
         
-        console.log(`[performSearch] Found ${data?.length || 0} candidates.`);
-        console.log('[performSearch] Candidate data with skills:', data);
-
-        // تحويل البيانات مع المهارات
         const adaptedCandidates = data?.map(candidate => {
-          // استخراج المهارات من العلاقة
           const skills = candidate.user_skills?.map((userSkill: any) => ({
             name: userSkill.skills?.name,
             level: userSkill.level
-          })).filter((skill: any) => skill.name) || []; // تصفية المهارات الفارغة
+          })).filter((skill: any) => skill.name) || [];
 
-          // استخراج أسماء المهارات فقط للعرض
           const skillNames = skills.map((skill: any) => skill.name);
 
           return {
@@ -169,8 +167,8 @@ export default function SearchPage() {
             name: candidate.full_name,
             title: candidate.job_title,
             location: candidate.country,
-            skills: skillNames, // ✅ الآن تحتوي على المهارات الفعلية
-            skillsWithLevel: skills, // احتفظ بالبيانات الكاملة إذا احتجتها
+            skills: skillNames,
+            skillsWithLevel: skills,
             summary: candidate.job_title,
             avatar: candidate.profile_image_url || 'candidate-avatar-1',
             email: candidate.email,
@@ -182,7 +180,6 @@ export default function SearchPage() {
         setSearchResults(adaptedCandidates);
       }
     } catch (err: any) {
-      console.error("Search Error:", err);
       toast({
         title: t('search.searchFailedTitle'),
         description: err?.message || t('search.searchFailedDescription'),
@@ -191,7 +188,6 @@ export default function SearchPage() {
       setSearchResults([]);
     } finally {
       setIsLoading(false);
-      console.log('[performSearch] Search finished.');
     }
   }, [user, currentRole, toast, t]);
 
@@ -204,7 +200,6 @@ export default function SearchPage() {
       remote: searchParams.get('remote') === 'true',
     };
     
-    // تأكد أن currentRole محدد قبل البحث
     if (currentRole) {
       performSearch(params);
     }
@@ -247,22 +242,7 @@ export default function SearchPage() {
       )}
 
       {isLoading ? (
-        <div className="space-y-6">
-          {[...Array(3)].map((_, i) => (
-             <div key={i} className="bg-card p-6 rounded-2xl shadow-md w-full animate-pulse">
-                <div className="flex gap-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg"></div>
-                  <div className="flex-1 space-y-3">
-                    <div className="h-5 bg-muted rounded w-3/4"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
-                  </div>
-                </div>
-                <div className="h-4 bg-muted rounded w-full mt-4"></div>
-                <div className="h-4 bg-muted rounded w-5/6 mt-2"></div>
-              </div>
-          ))}
-        </div>
-
+        <ResultsSkeleton />
       ) : searchResults.length > 0 ? (
         <ResultsList results={searchResults} role={currentRole} />
       ) : (
