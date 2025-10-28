@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import SearchBar from '@/components/search/SearchBar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
+import { Terminal, LogIn } from 'lucide-react';
 import type { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import Illustration from '@/components/search/Illustration';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const ResultsList = dynamic(() => import('@/components/search/ResultsList'), {
   loading: () => <ResultsSkeleton />,
@@ -198,6 +200,13 @@ export default function SearchPage() {
   }, [searchParams, performSearch, currentRole]);
 
   const handleSearch = (params: SearchParams) => {
+    // If a company user is not logged in, show the prompt instead of searching
+    if (currentRole === 'company' && !user) {
+      setShowLoginPrompt(true);
+      setSearchResults([]);
+      return;
+    }
+    
     const url = new URL(window.location.toString());
     url.searchParams.set('q', params.q);
     url.searchParams.set('loc', params.loc);
@@ -229,12 +238,22 @@ export default function SearchPage() {
 
 
       {showLoginPrompt && (
-         <Alert variant="default" className="max-w-2xl mx-auto rounded-3xl">
-          <Terminal className="h-4 w-4" />
-          <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
-          <AlertDescription>
-            {t('search.loginRequiredDescription')}
-          </AlertDescription>
+         <Alert variant="default" className="max-w-2xl mx-auto rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className='flex items-center'>
+            <Terminal className="h-4 w-4" />
+            <div className='ms-4'>
+              <AlertTitle>{t('search.loginRequiredTitle')}</AlertTitle>
+              <AlertDescription>
+                {t('search.loginRequiredDescription')}
+              </AlertDescription>
+            </div>
+          </div>
+          <Button asChild className="rounded-2xl w-full sm:w-auto">
+            <Link href="/signin">
+              <LogIn className="ms-2" />
+              {t('header.signIn')}
+            </Link>
+          </Button>
         </Alert>
       )}
 
