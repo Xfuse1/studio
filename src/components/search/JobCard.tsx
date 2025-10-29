@@ -18,7 +18,7 @@ import { ar, enUS } from 'date-fns/locale';
 import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface JobCardProps {
   job: {
@@ -197,3 +197,4 @@ export default function JobCard({ job }: JobCardProps) {
     </>
   );
 }
+
