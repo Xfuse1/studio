@@ -26,7 +26,7 @@
     "contract": "Contract",
     "remoteOnly": "Remote Only",
     "loginRequiredTitle": "Login Required",
-    "loginRequiredDescription": "To view candidates, you must first log in as a company.",
+    "loginRequiredDescription": "To use this feature, you must first log in.",
     "noResultsTitle": "No Results Found",
     "noResultsDescription": "Try broadening your search or using different keywords.",
     "searchFailedTitle": "Search Failed",

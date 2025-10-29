@@ -26,7 +26,7 @@
     "contract": "عقد",
     "remoteOnly": "عن بعد فقط",
     "loginRequiredTitle": "مطلوب تسجيل الدخول",
-    "loginRequiredDescription": "لعرض المرشحين، يجب عليك تسجيل الدخول كشركة أولاً.",
+    "loginRequiredDescription": "لاستخدام هذه الميزة، يجب عليك تسجيل الدخول أولاً.",
     "noResultsTitle": "لم يتم العثور على نتائج",
     "noResultsDescription": "حاول توسيع نطاق البحث أو استخدام كلمات رئيسية مختلفة.",
     "searchFailedTitle": "فشل البحث",

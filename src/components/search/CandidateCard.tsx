@@ -13,7 +13,6 @@ import { MapPin, Mail, Phone } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
 
 interface CandidateCardProps {
   candidate: {
@@ -29,12 +28,12 @@ interface CandidateCardProps {
     nationality?: string;
     skillsWithLevel?: any[];
   };
+  requireLogin: () => void;
 }
 
-export default function CandidateCard({ candidate }: CandidateCardProps) {
+export default function CandidateCard({ candidate, requireLogin }: CandidateCardProps) {
     const { t } = useTranslation();
     const { user } = useAuth();
-    const router = useRouter();
     const avatarPlaceholder = PlaceHolderImages.find(p => p.id === candidate.avatar);
 
     const displaySkills = candidate.skills || 
@@ -42,7 +41,7 @@ export default function CandidateCard({ candidate }: CandidateCardProps) {
 
     const handleViewProfile = () => {
       if(!user) {
-        router.push('/signin');
+        requireLogin();
       } else {
         console.log("Navigate to profile for user:", candidate.id);
       }

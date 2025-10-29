@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import Illustration from '@/components/search/Illustration';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 const ResultsList = dynamic(() => import('@/components/search/ResultsList'), {
@@ -77,6 +76,10 @@ export default function SearchPage() {
      }
   }, [user]);
 
+  const requireLogin = () => {
+    setShowLoginPrompt(true);
+  };
+
   const performSearch = useCallback(async (params: SearchParams) => {
     setIsLoading(true);
   
@@ -90,8 +93,7 @@ export default function SearchPage() {
       return;
     }
   
-    // Explicitly prevent search for logged-out company users
-    if (currentRole === 'company' && !user) {
+    if (!user) {
       setShowLoginPrompt(true);
       setSearchResults([]);
       setIsLoading(false);
@@ -135,13 +137,6 @@ export default function SearchPage() {
         setSearchResults(adaptedJobs);
 
       } else if (currentRole === 'company') {
-        if (!user) {
-          setShowLoginPrompt(true);
-          setSearchResults([]);
-          setIsLoading(false);
-          return;
-        }
-
         let query = supabase
           .from('seeker_profiles')
           .select(`
@@ -214,14 +209,20 @@ export default function SearchPage() {
       remote: searchParams.get('remote') === 'true',
     };
     
-    if (currentRole) {
+    // Always check for user before performing a search
+    if (user && currentRole) {
       performSearch(params);
+    } else {
+      setIsLoading(false);
+      // Don't show login prompt on initial load unless a search was attempted
+      if (searchParams.get('q') || searchParams.get('loc')) {
+        setShowLoginPrompt(true);
+      }
     }
-  }, [searchParams, performSearch, currentRole]);
+  }, [searchParams, performSearch, currentRole, user]);
 
   const handleSearch = (params: SearchParams) => {
-    // If a company user is not logged in, show the prompt instead of searching
-    if (currentRole === 'company' && !user) {
+    if (!user) {
       setShowLoginPrompt(true);
       setSearchResults([]);
       return;
@@ -283,9 +284,9 @@ export default function SearchPage() {
       {isLoading ? (
         <ResultsSkeleton />
       ) : searchResults.length > 0 ? (
-        <ResultsList results={searchResults} role={currentRole} />
+        <ResultsList results={searchResults} role={currentRole} requireLogin={requireLogin} />
       ) : (
-        !showLoginPrompt && (
+        !showLoginPrompt && user && ( // only show no results if user is logged in
             <div className="text-center py-16">
                 <h2 className="text-2xl font-bold mb-2">{t('search.noResultsTitle')}</h2>
                 <p className="text-foreground">{t('search.noResultsDescription')}</p>

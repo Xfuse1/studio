@@ -17,7 +17,8 @@ import { ar, enUS } from 'date-fns/locale';
 import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useAuth } from "@/hooks/useAuth";
 
 interface JobCardProps {
   job: {
@@ -33,6 +34,7 @@ interface JobCardProps {
     application_instructions?: string;
     employment_type?: string;
   };
+  requireLogin: () => void;
 }
 
 const DetailSection = ({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) => (
@@ -45,8 +47,9 @@ const DetailSection = ({ title, icon, children }: { title: string, icon: React.R
     </div>
 );
 
-export default function JobCard({ job }: JobCardProps) {
+export default function JobCard({ job, requireLogin }: JobCardProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const logoPlaceholder = PlaceHolderImages.find(p => p.id === job.logo);
 
@@ -59,6 +62,14 @@ export default function JobCard({ job }: JobCardProps) {
     console.error("Invalid date for job.posted_at:", job.posted_at);
   }
   
+  const handleViewMoreClick = () => {
+    if (user) {
+      setIsDialogOpen(true);
+    } else {
+      requireLogin();
+    }
+  };
+
   const renderDescription = () => {
     if (!job.description) return <p>{t('jobCard.noDetails')}</p>;
 
@@ -159,7 +170,7 @@ export default function JobCard({ job }: JobCardProps) {
           </div>
           <Button 
             className="rounded-full w-full sm:w-auto font-bold px-6 py-3"
-            onClick={() => setIsDialogOpen(true)}
+            onClick={handleViewMoreClick}
           >
               {t('jobCard.viewMore')}
           </Button>
@@ -190,10 +201,9 @@ export default function JobCard({ job }: JobCardProps) {
           <div className="py-4 text-base text-foreground max-h-[60vh] overflow-y-auto custom-scrollbar pr-4">
              {renderDescription()}
              
-             {/* قسم معلومات الاتصال */}
              {(job.contact_phone || job.contact_email || job.application_instructions) && (
                <DetailSection 
-                 title="معلومات الاتصال" 
+                 title="معلومات التقديم" 
                  icon={<Mail className="w-5 h-5"/>}
                >
                  <div className="space-y-3">

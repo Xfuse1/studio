@@ -5,9 +5,10 @@ import type { UserRole } from "@/contexts/AuthContext";
 interface ResultsListProps {
   results: any[];
   role: UserRole | undefined;
+  requireLogin: () => void;
 }
 
-export default function ResultsList({ results, role }: ResultsListProps) {
+export default function ResultsList({ results, role, requireLogin }: ResultsListProps) {
   return (
     <div className="grid md:grid-cols-2 gap-8">
       {results.map((item, index) => (
@@ -16,7 +17,7 @@ export default function ResultsList({ results, role }: ResultsListProps) {
           className="animate-fade-in-up"
           style={{ animationDelay: `${index * 150}ms`}}
         >
-          {role === 'seeker' ? <JobCard job={item} /> : <CandidateCard candidate={item} />}
+          {role === 'seeker' ? <JobCard job={item} requireLogin={requireLogin} /> : <CandidateCard candidate={item} requireLogin={requireLogin} />}
         </div>
       ))}
     </div>
