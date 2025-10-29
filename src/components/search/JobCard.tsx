@@ -168,7 +168,7 @@ export default function JobCard({ job }: JobCardProps) {
         <DialogContent className="sm:max-w-[625px] rounded-3xl">
           <DialogHeader className="pr-10">
             <DialogTitle className="text-2xl font-bold">{job.title}</DialogTitle>
-            <DialogDescription>
+            <DialogDescription asChild>
               <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-1">
                 <div className="flex items-center gap-1">
                     <Briefcase className="w-4 h-4" />
