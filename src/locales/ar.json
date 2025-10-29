@@ -36,7 +36,11 @@
   "jobCard": {
     "applyNow": "التقديم الآن",
     "posted": "نشرت",
-    "viewMore": "عرض المزيد"
+    "viewMore": "عرض المزيد",
+    "responsibilities": "المهام والمسؤوليات",
+    "qualifications": "المؤهلات والخبرات",
+    "benefits": "الراتب والمميزات",
+    "noDetails": "لا توجد تفاصيل إضافية متاحة."
   },
   "candidateCard": {
     "skills": "المهارات:",

@@ -36,7 +36,11 @@
   "jobCard": {
     "applyNow": "Apply Now",
     "posted": "Posted",
-    "viewMore": "View More"
+    "viewMore": "View More",
+    "responsibilities": "Responsibilities",
+    "qualifications": "Qualifications",
+    "benefits": "Salary and Benefits",
+    "noDetails": "No additional details available."
   },
   "candidateCard": {
     "skills": "Skills:",

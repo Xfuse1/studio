@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, Briefcase, Star, DollarSign, CheckCircle } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
@@ -32,6 +32,16 @@ interface JobCardProps {
   };
 }
 
+const DetailSection = ({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) => (
+    <div className="mb-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-2 text-primary">
+            {icon}
+            {title}
+        </h3>
+        <div className="prose prose-sm text-foreground max-w-none">{children}</div>
+    </div>
+);
+
 export default function JobCard({ job }: JobCardProps) {
   const { t } = useTranslation();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -45,6 +55,65 @@ export default function JobCard({ job }: JobCardProps) {
   } catch (error) {
     console.error("Invalid date for job.postedAt:", job.postedAt);
   }
+  
+  const renderDescription = () => {
+    if (!job.description) return <p>{t('jobCard.noDetails')}</p>;
+
+    const sections: { [key: string]: { title: string; icon: React.ReactNode, content: string[] } } = {
+        'المهام والمسؤوليات': { title: t('jobCard.responsibilities'), icon: <Briefcase className="w-5 h-5"/>, content: [] },
+        'المؤهلات والخبرات': { title: t('jobCard.qualifications'), icon: <Star className="w-5 h-5"/>, content: [] },
+        'الراتب والمميزات': { title: t('jobCard.benefits'), icon: <DollarSign className="w-5 h-5"/>, content: [] },
+    };
+
+    let currentSection: string | null = null;
+    let otherContent: string[] = [];
+
+    job.description.split('\n').forEach(line => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+
+        const foundSection = Object.keys(sections).find(key => trimmedLine.startsWith(key));
+        
+        if (foundSection) {
+            currentSection = foundSection;
+        } else if (currentSection && (trimmedLine.startsWith('-') || trimmedLine.startsWith('*'))) {
+            sections[currentSection].content.push(trimmedLine.substring(1).trim());
+        } else {
+            otherContent.push(trimmedLine);
+        }
+    });
+
+    const hasStructuredContent = Object.values(sections).some(s => s.content.length > 0);
+
+    return (
+        <div>
+            {hasStructuredContent ? (
+                <>
+                    {otherContent.length > 0 && (
+                        <p className="mb-4">{otherContent.join('\n')}</p>
+                    )}
+                    {Object.values(sections).map((section, index) => (
+                        section.content.length > 0 && (
+                            <DetailSection key={index} title={section.title} icon={section.icon}>
+                                <ul className="list-none p-0 m-0">
+                                    {section.content.map((item, itemIndex) => (
+                                        <li key={itemIndex} className="flex items-start gap-2 mb-2">
+                                            <CheckCircle className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </DetailSection>
+                        )
+                    ))}
+                </>
+            ) : (
+                <p>{job.description}</p>
+            )}
+        </div>
+    );
+};
+
 
   return (
     <>
@@ -96,20 +165,29 @@ export default function JobCard({ job }: JobCardProps) {
       </Card>
       
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[625px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[625px] rounded-3xl">
+          <DialogHeader className="pr-10">
             <DialogTitle className="text-2xl font-bold">{job.title}</DialogTitle>
             <DialogDescription>
-              {job.company} - {job.location}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-1">
+                <div className="flex items-center gap-1">
+                    <Briefcase className="w-4 h-4" />
+                    <span>{job.company}</span>
+                </div>
+                 <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{job.location}</span>
+                </div>
+              </div>
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 text-base text-foreground max-h-[60vh] overflow-y-auto">
-            <p>{job.description}</p>
+          <div className="py-4 text-base text-foreground max-h-[60vh] overflow-y-auto custom-scrollbar pr-4">
+             {renderDescription()}
           </div>
           <DialogFooter>
             <Button 
               type="button" 
-              variant="secondary" 
+              variant="outline" 
               onClick={() => setIsDialogOpen(false)}
               className="rounded-2xl"
             >
