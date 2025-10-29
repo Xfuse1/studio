@@ -168,18 +168,16 @@ export default function JobCard({ job }: JobCardProps) {
         <DialogContent className="sm:max-w-[625px] rounded-3xl">
           <DialogHeader className="pr-10">
             <DialogTitle className="text-2xl font-bold">{job.title}</DialogTitle>
-            <DialogDescription asChild>
-              <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-1">
-                <div className="flex items-center gap-1">
-                    <Briefcase className="w-4 h-4" />
-                    <span>{job.company}</span>
-                </div>
-                 <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    <span>{job.location}</span>
-                </div>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-1">
+              <div className="flex items-center gap-1">
+                  <Briefcase className="w-4 h-4" />
+                  <span>{job.company}</span>
               </div>
-            </DialogDescription>
+               <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  <span>{job.location}</span>
+              </div>
+            </div>
           </DialogHeader>
           <div className="py-4 text-base text-foreground max-h-[60vh] overflow-y-auto custom-scrollbar pr-4">
              {renderDescription()}
@@ -192,12 +190,6 @@ export default function JobCard({ job }: JobCardProps) {
               className="rounded-2xl"
             >
               {t('signIn.cancel')}
-            </Button>
-            <Button 
-              type="button"
-              className="rounded-2xl"
-            >
-              {t('jobCard.applyNow')}
             </Button>
           </DialogFooter>
         </DialogContent>
