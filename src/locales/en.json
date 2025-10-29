@@ -1,3 +1,4 @@
+
 {
   "header": {
     "title": "Hiring Portal",
@@ -34,7 +35,8 @@
   },
   "jobCard": {
     "applyNow": "Apply Now",
-    "posted": "Posted"
+    "posted": "Posted",
+    "viewMore": "View More"
   },
   "candidateCard": {
     "skills": "Skills:",

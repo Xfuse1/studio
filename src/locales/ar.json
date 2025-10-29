@@ -1,3 +1,4 @@
+
 {
   "header": {
     "title": "بوابة التوظيف",
@@ -34,7 +35,8 @@
   },
   "jobCard": {
     "applyNow": "التقديم الآن",
-    "posted": "نشرت"
+    "posted": "نشرت",
+    "viewMore": "عرض المزيد"
   },
   "candidateCard": {
     "skills": "المهارات:",
