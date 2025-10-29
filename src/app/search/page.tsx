@@ -102,7 +102,7 @@ export default function SearchPage() {
       if (currentRole === 'seeker') {
         let query = supabase
           .from('jobs')
-          .select('*, companies (name_ar, name_en)')
+          .select('*, company_name')
           .eq('is_active', true);
   
         if (params.q) {
@@ -121,7 +121,7 @@ export default function SearchPage() {
         const adaptedJobs = data.map(job => ({
           id: job.id,
           title: job.title,
-          company: (job.companies as any)?.name_ar || (job.companies as any)?.name_en || t('search.unknownCompany'),
+          company: job.company_name || t('search.unknownCompany'),
           location: job.location,
           description: job.description,
           postedAt: job.created_at,
