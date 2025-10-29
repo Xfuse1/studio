@@ -102,7 +102,7 @@ export default function SearchPage() {
       if (currentRole === 'seeker') {
         let query = supabase
           .from('jobs')
-          .select('*, company_name')
+          .select('*, company_name, contact_phone, contact_email, application_instructions, posted_at')
           .eq('is_active', true);
   
         if (params.q) {
@@ -121,11 +121,15 @@ export default function SearchPage() {
         const adaptedJobs = data.map(job => ({
           id: job.id,
           title: job.title,
-          company: job.company_name || t('search.unknownCompany'),
+          company_name: job.company_name || t('search.unknownCompany'),
           location: job.location,
           description: job.description,
-          postedAt: job.created_at,
-          logo: (job.companies as any)?.logo_url || 'company-logo-1', // Fallback to placeholder
+          posted_at: job.posted_at,
+          logo: (job.companies as any)?.logo_url || 'company-logo-1',
+          contact_phone: job.contact_phone,
+          contact_email: job.contact_email,
+          application_instructions: job.application_instructions,
+          employment_type: job.employment_type
         }));
   
         setSearchResults(adaptedJobs);

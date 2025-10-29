@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from "next/image";
@@ -11,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Clock, Briefcase, Star, DollarSign, CheckCircle } from "lucide-react";
+import { MapPin, Clock, Briefcase, Star, DollarSign, CheckCircle, Phone, Mail } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
@@ -24,11 +23,15 @@ interface JobCardProps {
   job: {
     id: string;
     title: string;
-    company: string;
+    company_name: string;
     location: string;
     description: string;
-    postedAt: string;
+    posted_at: string;
     logo: string;
+    contact_phone?: string;
+    contact_email?: string;
+    application_instructions?: string;
+    employment_type?: string;
   };
 }
 
@@ -49,11 +52,11 @@ export default function JobCard({ job }: JobCardProps) {
 
   let timeAgo = 'undefined';
   try {
-    if (job.postedAt) {
-      timeAgo = formatDistanceToNow(new Date(job.postedAt), { addSuffix: true, locale: i18n.language === 'ar' ? ar : enUS });
+    if (job.posted_at) {
+      timeAgo = formatDistanceToNow(new Date(job.posted_at), { addSuffix: true, locale: i18n.language === 'ar' ? ar : enUS });
     }
   } catch (error) {
-    console.error("Invalid date for job.postedAt:", job.postedAt);
+    console.error("Invalid date for job.posted_at:", job.posted_at);
   }
   
   const renderDescription = () => {
@@ -114,7 +117,6 @@ export default function JobCard({ job }: JobCardProps) {
     );
 };
 
-
   return (
     <>
       <Card className="w-full rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 bg-white">
@@ -123,7 +125,7 @@ export default function JobCard({ job }: JobCardProps) {
               <div className="relative w-16 h-16">
                 <Image
                     src={logoPlaceholder.imageUrl}
-                    alt={`${job.company} logo`}
+                    alt={`${job.company_name} logo`}
                     fill
                     className="rounded-xl border object-cover"
                     data-ai-hint={logoPlaceholder.imageHint}
@@ -136,7 +138,7 @@ export default function JobCard({ job }: JobCardProps) {
           )}
           <div className="flex-1">
             <CardTitle className="text-xl font-headline">{job.title}</CardTitle>
-            <CardDescription className="text-md">{job.company}</CardDescription>
+            <CardDescription className="text-md">{job.company_name}</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -171,16 +173,51 @@ export default function JobCard({ job }: JobCardProps) {
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-1">
               <div className="flex items-center gap-1">
                   <Briefcase className="w-4 h-4" />
-                  <span>{job.company}</span>
+                  <span>{job.company_name}</span>
               </div>
                <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
                   <span>{job.location}</span>
               </div>
+              {job.employment_type && (
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{job.employment_type}</span>
+                </div>
+              )}
             </div>
           </DialogHeader>
           <div className="py-4 text-base text-foreground max-h-[60vh] overflow-y-auto custom-scrollbar pr-4">
              {renderDescription()}
+             
+             {/* قسم معلومات الاتصال */}
+             {(job.contact_phone || job.contact_email || job.application_instructions) && (
+               <DetailSection 
+                 title="معلومات الاتصال" 
+                 icon={<Mail className="w-5 h-5"/>}
+               >
+                 <div className="space-y-3">
+                   {job.contact_phone && (
+                     <div className="flex items-center gap-2">
+                       <Phone className="w-4 h-4 text-green-600" />
+                       <span><strong>الهاتف:</strong> {job.contact_phone}</span>
+                     </div>
+                   )}
+                   {job.contact_email && (
+                     <div className="flex items-center gap-2">
+                       <Mail className="w-4 h-4 text-blue-600" />
+                       <span><strong>البريد الإلكتروني:</strong> {job.contact_email}</span>
+                     </div>
+                   )}
+                   {job.application_instructions && (
+                     <div className="bg-muted p-3 rounded-lg mt-2">
+                       <p className="text-sm font-medium mb-1">تعليمات التقديم:</p>
+                       <p className="text-sm">{job.application_instructions}</p>
+                     </div>
+                   )}
+                 </div>
+               </DetailSection>
+             )}
           </div>
           <DialogFooter>
             <Button 
@@ -197,4 +234,3 @@ export default function JobCard({ job }: JobCardProps) {
     </>
   );
 }
-
